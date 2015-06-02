@@ -6,6 +6,7 @@ interface SimpleSchemaDefinition {
 
 interface SimpleSchemaStatic {
     new(definition: SimpleSchemaDefinition): SimpleSchema;
+    extendOptions(options: {[options: string]: any}): void;
 }
 
 interface SimpleSchema {
