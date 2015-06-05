@@ -467,16 +467,16 @@ declare module EJSON {
 	interface CustomType {
 		clone(): EJSON.CustomType;
 		equals(other: Object): boolean;
-		toJSONValue(): JSON;
+		toJSONValue(): JSONable;
 		typeName(): string;
 	}
 
-	function addType(name: string, factory: (val: JSON) => EJSONable): void;
+	function addType(name: string, factory: (val: JSONable) => EJSON.CustomType): void;
 	function clone<T>(val:T): T;
 	function equals(a: EJSON, b: EJSON, options?: {
 				keyOrderSensitive?: boolean;
 			}): boolean;
-	function fromJSONValue(val: JSON): any;
+	function fromJSONValue(val: JSONable): any;
 	function isBinary(x: Object): boolean;
 	var newBinary: any;
 	function parse(str: string): EJSON;
@@ -484,7 +484,7 @@ declare module EJSON {
 				indent?: boolean | number | string;
 				canonical?: boolean;
 			}): string;
-	function toJSONValue(val: EJSON): JSON;
+	function toJSONValue(val: EJSON): JSONable;
 }
 
 declare module Match {
