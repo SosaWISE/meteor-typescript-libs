@@ -125,12 +125,6 @@ declare module Meteor {
         verifyEmail:  Meteor.EmailFields;
     }
 
-    //interface Error {
-    //    error: string;
-    //    reason?: string;
-    //    details?: string;
-    //}
-
     interface Connection {
         id: string;
         close: Function;
