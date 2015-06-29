@@ -553,19 +553,32 @@ var createDecomposedClass = function(apiDef, tabs) {
 
     // Exception case for Template
     if (apiDef.name === 'Template') {
-        classContent += tabs + '\t// It should be [templateName: string]: TemplateInstance but this is not possible -- user will need to cast to TemplateInstance\n' +
-                        tabs + '\t[templateName: string]: any | Template; // added "any" to make it work\n' +
-                        tabs + '\thead: Template;\n' +
-                        tabs + '\tfind(selector:string):Blaze.Template;\n' +
-                        tabs + '\tfindAll(selector:string):Blaze.Template[];\n' +
-                        tabs + '\t$:any; \n';
+        classContent +=
+            tabs + '\t// It should be [templateName: string]: TemplateInstance but this is not possible -- user will need to cast to TemplateInstance\n' +
+            tabs + '\t[templateName: string]: any | Template; // added "any" to make it work\n' +
+            tabs + '\thead: Template;\n' +
+            tabs + '\tfind(selector:string):Blaze.Template;\n' +
+            tabs + '\tfindAll(selector:string):Blaze.Template[];\n' +
+            tabs + '\t$:any; \n';
     }
 
     classContent += createModuleInnerContent(apiDef.longname, tabs, true, 'static');
     classContent += tabs + '}\n';
+
+    // Exception case for Meteor.Error since it is improperly defined in official JSON.
+    if (apiDef.longname === 'Meteor.Error') {
+        classContent +=
+            tabs + 'interface Error {\n' +
+            tabs + '\terror: string;\n' +
+            tabs + '\treason?: string;\n' +
+            tabs + '\tdetails?: string;\n' +
+            tabs + '}\n'
+        return classContent;
+    }
+
     classContent += tabs + 'interface ' + apiDef.name + addGenerics(apiDef.longname) + ' {\n';
     classContent += createModuleInnerContent(apiDef.longname, tabs, true, 'instance');
-    if (apiDef.longname === 'Mongo.Collection') { // Total exception case
+    if (apiDef.longname === 'Mongo.Collection') { // Exception case
         classContent += tabs + '\t_ensureIndex(indexName: string, options?: {[key: string]: any}): void;\n'
     }
     classContent += tabs + '}\n\n';
@@ -620,7 +633,7 @@ var createFunction= function createFunction(apiDef, tabs, isInInterface) {
 
 // Recursively create contents for each module
 var createModuleInnerContent = function(moduleOrInterfaceName, tabs, isInterface, scope) {
-    //console.log('createModuleInnerContent(), moduleOrInterfaceName = ' + moduleOrInterfaceName);
+    // console.log('createModuleInnerContent(), moduleOrInterfaceName = ' + moduleOrInterfaceName);
     tabs = tabs || '';
     var content = '';
     _.forIn(DocsData, function (apiDef) {  // Global var DocsData created in function runApiFileInThisContext()

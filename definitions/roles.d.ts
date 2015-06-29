@@ -16,10 +16,11 @@ interface RolesDAO {
 declare module Roles {
   function createRole(roleName: string): string;
   function deleteRole(roleName: string): void;
-  function addUsersToRoles(users: any, roles: any): void;
+  function addUsersToRoles(users: any, roles: any, groups?: string): void;
   function removeUsersFromRoles(users: any, roles: any): void;
   function userIsInRole(user: any, roles: any): boolean;  //user can be user ID or user object
   function getRolesForUser(userId: string): string[];
   function getAllRoles(): Mongo.Cursor<RolesDAO>;
   function getUsersInRole(roleName: string): Mongo.Cursor<RolesDAO>;
+  var GLOBAL_GROUP: string;
 }

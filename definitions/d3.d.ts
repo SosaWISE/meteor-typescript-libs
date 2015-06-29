@@ -918,7 +918,13 @@ declare module d3 {
     }
 
     /**
-     * The current event's value. Use this variable in a handler registered with selection.on.
+     * Interface for any and all d3 events.
+     */
+    interface Event extends KeyboardEvent, MouseEvent {
+    }
+
+    /**
+     * The current event's value. Use this variable in a handler registered with `selection.on`.
      */
     export var event: Event;
 
@@ -1084,8 +1090,8 @@ declare module d3 {
     export function bisectRight<T>(array: T[], x: T, lo?: number, hi?: number): number;
 
     export function bisector<T, U>(accessor: (x: T) => U): {
-        left: (array: T[], x: T, lo?: number, hi?: number) => number;
-        right: (array: T[], x: T, lo?: number, hi?: number) => number;
+        left: (array: T[], x: U, lo?: number, hi?: number) => number;
+        right: (array: T[], x: U, lo?: number, hi?: number) => number;
     }
 
     export function bisector<T, U>(comparator: (a: T, b: U) => number): {

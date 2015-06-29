@@ -125,11 +125,11 @@ declare module Meteor {
         verifyEmail:  Meteor.EmailFields;
     }
 
-    interface Error {
-        error: number;
-        reason?: string;
-        details?: string;
-    }
+    //interface Error {
+    //    error: string;
+    //    reason?: string;
+    //    details?: string;
+    //}
 
     interface Connection {
         id: string;
@@ -497,8 +497,10 @@ declare module Meteor {
 		new(error: string, reason?: string, details?: string): Error;
 	}
 	interface Error {
+		error: string;
+		reason?: string;
+		details?: string;
 	}
-
 	function absoluteUrl(path?: string, options?: {
 				secure?: boolean;
 				replaceLocalhost?: boolean;

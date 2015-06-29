@@ -2072,3 +2072,15 @@ function multiTest() {
         .attr("transform", "translate(0," + height + ")")
         .call(xAxis);
 }
+function testD3Events() {
+    d3.select('svg')
+        .on('click', function () {
+        var coords = [d3.event.pageX, d3.event.pageY];
+        console.log("clicked", d3.event.target, "at " + coords);
+    })
+        .on('keypress', function () {
+        if (d3.event.shiftKey) {
+            console.log('shift + ' + d3.event.which);
+        }
+    });
+}
