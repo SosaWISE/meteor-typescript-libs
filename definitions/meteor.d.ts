@@ -125,12 +125,6 @@ declare module Meteor {
         verifyEmail:  Meteor.EmailFields;
     }
 
-    //interface Error {
-    //    error: string;
-    //    reason?: string;
-    //    details?: string;
-    //}
-
     interface Connection {
         id: string;
         close: Function;
@@ -325,13 +319,6 @@ interface MailComposer {
  */
 declare module Accounts {
 	function changePassword(oldPassword: string, newPassword: string, callback?: Function): void;
-	function config(options: {
-				sendVerificationEmail?: boolean;
-				forbidClientAccountCreation?: boolean;
-				restrictCreationByEmailDomain?: string | Function;
-				loginExpirationInDays?: number;
-				oauthSecretKey?: string;
-			}): void;
 	function createUser(options: {
 				username?: string;
 				email?: string;
@@ -342,11 +329,8 @@ declare module Accounts {
 	function forgotPassword(options: {
 				email?: string;
 			}, callback?: Function): void;
-	function onCreateUser(func: Function): void;
 	function onEmailVerificationLink(callback: Function): void;
 	function onEnrollmentLink(callback: Function): void;
-	function onLogin(func: Function): {stop: Function};
-	function onLoginFailure(func: Function): {stop: Function};
 	function onResetPasswordLink(callback: Function): void;
 	function resetPassword(token: string, newPassword: string, callback?: Function): void;
 	function sendEnrollmentEmail(userId: string, email?: string): void;
@@ -363,9 +347,46 @@ declare module Accounts {
 				passwordSignupFields?: string;
 			}): void;
 	};
-	function validateLoginAttempt(func: Function): {stop: Function};
-	function validateNewUser(func: Function): void;
 	function verifyEmail(token: string, callback?: Function): void;
+	function config(options: {
+				sendVerificationEmail?: boolean;
+				forbidClientAccountCreation?: boolean;
+				restrictCreationByEmailDomain?: string | Function;
+				loginExpirationInDays?: number;
+				oauthSecretKey?: string;
+			}); /** TODO: add return value **/
+	function onLogin(func: Function); /** TODO: add return value **/
+	function onLoginFailure(func: Function); /** TODO: add return value **/
+	function user(); /** TODO: add return value **/
+	function userId(); /** TODO: add return value **/
+	function config(options: {
+				sendVerificationEmail?: boolean;
+				forbidClientAccountCreation?: boolean;
+				restrictCreationByEmailDomain?: string | Function;
+				loginExpirationInDays?: number;
+				oauthSecretKey?: string;
+			}); /** TODO: add return value **/
+	function loggingIn(); /** TODO: add return value **/
+	function logout(callback?: Function); /** TODO: add return value **/
+	function logoutOtherClients(callback?: Function); /** TODO: add return value **/
+	function onLogin(func: Function); /** TODO: add return value **/
+	function onLoginFailure(func: Function); /** TODO: add return value **/
+	function user(); /** TODO: add return value **/
+	function userId(); /** TODO: add return value **/
+	function config(options: {
+				sendVerificationEmail?: boolean;
+				forbidClientAccountCreation?: boolean;
+				restrictCreationByEmailDomain?: string | Function;
+				loginExpirationInDays?: number;
+				oauthSecretKey?: string;
+			}); /** TODO: add return value **/
+	function onCreateUser(func: Function); /** TODO: add return value **/
+	function onLogin(func: Function); /** TODO: add return value **/
+	function onLoginFailure(func: Function); /** TODO: add return value **/
+	function user(); /** TODO: add return value **/
+	function userId(); /** TODO: add return value **/
+	function validateLoginAttempt(func: Function); /** TODO: add return value **/
+	function validateNewUser(func: Function); /** TODO: add return value **/
 }
 
 declare module App {
@@ -395,7 +416,7 @@ declare module Assets {
 declare module Blaze {
 	function Each(argFunc: Function, contentFunc: Function, elseFunc?: Function): Blaze.View;
 	function If(conditionFunc: Function, contentFunc: Function, elseFunc?: Function): Blaze.View;
-	function Let(bindingsFunc: Function, contentFunc: Function): Blaze.View;
+	function Let(bindings: Function, contentFunc: Function): Blaze.View;
 	var Template: TemplateStatic;
 	interface TemplateStatic {
 		new(viewName?: string, renderFunction?: Function): Template;
@@ -521,9 +542,10 @@ declare module Meteor {
 	function loginWith<ExternalService>(options?: {
 				requestPermissions?: string[];
 				requestOfflineToken?: boolean;
-				forceApprovalPrompt?: boolean;
+				loginUrlParameters?: Object;
 				userEmail?: string;
 				loginStyle?: string;
+				redirectUrl?: string;
 			}, callback?: Function): void;
 	function loginWithPassword(user: Object | string, password: string, callback?: Function): void;
 	function logout(callback?: Function): void;
@@ -585,6 +607,8 @@ declare module Mongo {
 				transform?: Function;
 			}): T;
 		insert(doc: T, callback?: Function): string;
+		rawCollection(); /** TODO: add return value **/
+		rawDatabase(); /** TODO: add return value **/
 		remove(selector: Mongo.Selector, callback?: Function): void;
 		update(selector: Mongo.Selector, modifier: Mongo.Modifier, options?: {
 				multi?: boolean;
@@ -630,6 +654,8 @@ declare module Package {
 				name?: string;
 				git?: string;
 				documentation?: string;
+				debugOnly?: boolean;
+				prodOnly?: boolean;
 			}): void;
 	function onTest(func: Function): void;
 	function onUse(func: Function): void;
@@ -692,6 +718,7 @@ declare module HTTP {
 				timeout?: number;
 				followRedirects?: boolean;
 				npmRequestOptions?: Object;
+				beforeSend?: Function;
 			}, asyncCallback?: Function): HTTP.HTTPResponse;
 	function del(url: string, callOptions?: Object, asyncCallback?: Function): HTTP.HTTPResponse;
 	function get(url: string, callOptions?: Object, asyncCallback?: Function): HTTP.HTTPResponse;
@@ -752,10 +779,10 @@ interface PackageAPIStatic {
 	new(): PackageAPI;
 }
 interface PackageAPI {
-	addFiles(filename: string | string[], architecture?: string): void;
-	export(exportedObject: string, architecture?: string): void;
-	imply(packageSpecs: string | string[]): void;
-	use(packageNames: string | string[], architecture?: string, options?: {
+	addFiles(filename: string | string[], architecture?: string | string[], fileOptions?: Object): void;
+	export(exportedObjects: string | string[], architecture?: string | string[], exportOptions?: Object, testOnly?: boolean): void;
+	imply(packageNames: string | string[], architecture?: string | string[]): void;
+	use(packageNames: string | string[], architecture?: string | string[], options?: {
 				weak?: boolean;
 				unordered?: boolean;
 			}): void;
@@ -814,3 +841,4 @@ interface Template {
 }
 
 declare function check(value: any, pattern: any): void;
+declare function getExtension(): String;

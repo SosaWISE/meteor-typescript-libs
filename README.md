@@ -1,6 +1,6 @@
 # Meteor TypeScript libraries
 
-This project adds TypeScript definition files related to Meteor.  It includes *meteor.d.ts* plus many others.  These are definitions for Meteor 1.1.0.2, and they require TypeScript 1.4 or higher (to allow Union types).  These definitions are mostly backwards compatible for any 1.* Meteor version.
+This project adds TypeScript definition files related to Meteor.  It includes *meteor.d.ts* plus many others.  These are definitions for Meteor 1.1.0.3, and they require TypeScript 1.4 or higher (to allow Union types).  These definitions are mostly backwards compatible for any 1.* Meteor version.
 
 ## Why use TypeScript?
 [TypeScript](http://www.typescriptlang.org/) enforces a *relaxed* static typing transpiler to Javascript. It is an opinionated attempt to build an elegant language on top of a crappy, yet popular platform.
@@ -25,7 +25,7 @@ For further reading about TypeScript, please refer to the [TypeScript Handbook](
 
    Or you can reference definition files individually:
    
-        /// <reference path=".typescript/package_defs/meteor.d.ts" />  (substitue path in your project)
+        /// <reference path=".typescript/package_defs/meteor.d.ts" />  (substitute path in your project)
         /// <reference path=".typescript/package_defs/underscore.d.ts" />
         /// <reference path=".typescript/package_defs/jquery.d.ts" />
 
@@ -38,7 +38,7 @@ For further reading about TypeScript, please refer to the [TypeScript Handbook](
 
 Meteor code can run on the client and the server, for this reason you should try to stay away from referencing *file.ts* directly: you may get unexpected results.
 
-Rather generate a *file.d.ts* using `tsc --reference file.ts`, and reference it in your file. 
+Rather generate a *file.d.ts* using `tsc --declaration file.ts`, and reference it in your file. 
   
 Compilation will be much faster and code will be cleaner - it's always better to split definition from implementation anyways.
 
