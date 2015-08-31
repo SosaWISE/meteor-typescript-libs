@@ -355,7 +355,6 @@ declare module Blaze {
 }
 
 declare module Cordova {
-	function depends(dependencies:{[id:string]:string}): void;
 }
 
 declare module DDP {
@@ -393,30 +392,24 @@ declare module Mongo {
 }
 
 declare module Npm {
-	function depends(dependencies:{[id:string]:string}): void;
 }
 
 declare module Package {
-	function describe(options: {
-				summary?: string;
-				version?: string;
-				name?: string;
-				git?: string;
-				documentation?: string;
-				debugOnly?: boolean;
-				prodOnly?: boolean;
-			}): void;
-	function onTest(func: Function): void;
-	function onUse(func: Function): void;
-	function registerBuildPlugin(options?: {
-				name?: string;
-				use?: string | string[];
-				sources?: string[];
-				npmDependencies?: Object;
-			}): void;
 }
 
 declare module Plugin {
+	function registerCompiler(options: {
+				extensions?: string[];
+				filenames?: string[];
+			}, factory: Function): void;
+	function registerLinter(options: {
+				extensions?: string[];
+			}, factory: Function): void;
+	function registerMinifier(options: {
+				extensions?: string[];
+				filenames?: string[];
+			}, factory: Function): void;
+	function registerSourceHandler(fileExtension: string, handler: Function): void;
 }
 
 declare module Tracker {
@@ -479,14 +472,6 @@ interface PackageAPIStatic {
 	new(): PackageAPI;
 }
 interface PackageAPI {
-	addFiles(filename: string | string[], architecture?: string | string[], fileOptions?: Object): void;
-	export(exportedObjects: string | string[], architecture?: string | string[], exportOptions?: Object, testOnly?: boolean): void;
-	imply(packageNames: string | string[], architecture?: string | string[]): void;
-	use(packageNames: string | string[], architecture?: string | string[], options?: {
-				weak?: boolean;
-				unordered?: boolean;
-			}): void;
-	versionsFrom(meteorRelease: string | string[]): void;
 }
 
 declare var ReactiveVar: ReactiveVarStatic;

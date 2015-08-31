@@ -1,6 +1,6 @@
 var _ = require('lodash');
 var fs = require("fs");
-var    SCRIPT_TEST_DIR = './script-definition-tests/';
+var SCRIPT_TEST_DIR = './script-definition-tests/';
 
 var testFilenames=fs.readdirSync("./tinytest-definition-tests");
 

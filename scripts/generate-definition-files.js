@@ -22,7 +22,7 @@ var vm = require('vm'),
     METEOR_API_URL = 'https://raw.githubusercontent.com/meteor/meteor/devel/docs/client/data.js',
     SAVED_METEOR_API_FILE_PATH = './lib/data.js',
     MANUALLY_MAINTAINED_DEFS_FILE = './lib/meteor-manually-maintained-definitions.d.ts',
-    //METEOR_DEF_FILENAME = 'meteor.d.ts',
+//METEOR_DEF_FILENAME = 'meteor.d.ts',
     DEBUG = true,
     definitionFilenames = [], // References to these files will be written to the master definition file
     testFilenames = ['meteor-tests.ts'],
@@ -33,12 +33,13 @@ var vm = require('vm'),
 // Global var DocsData created in function runApiFileInThisContext()
 
 
-var METEOR_FILE_CONFIGS = [
+var METEOR_LOCUS_CONFIGS = [
     {locus: 'None', fileName: 'meteor.d.ts'},
     {locus: 'Anywhere', fileName: 'meteor.common.d.ts'},
     {locus: 'Client', fileName: 'meteor.client.d.ts'},
     {locus: 'Server', fileName: 'meteor.server.d.ts'},
-    {locus: 'package.js', fileName: 'meteor.package.d.ts'}
+    {locus: 'package.js', fileName: 'meteor.package.d.ts'},
+    {locus: 'Build Plugin', fileName: 'meteor.build.d.ts'}
 ];
 
 // Not currently called -- not sure how to automatically generate latest lib.d.ts
@@ -357,8 +358,12 @@ var propertyAndReturnTypeMappings = {
 
     'check': 'void',
 
-    'DDPCommon.MethodInvocation': 'any'
+    'DDPCommon.MethodInvocation': 'any',
 
+    'Plugin.registerCompiler': 'void',
+    'Plugin.registerLinter': 'void',
+    'Plugin.registerMinifier': 'void',
+    'Plugin.registerSourceHandler': 'void'
 };
 
 var getThirdPartyDefLibs = function () {
@@ -707,6 +712,10 @@ var parseClientMeteorApi = function (meteorClientApiFile) {
 };
 
 var populateModuleAndGlobalClassNames = function (meteorClientApiFile) {
+    moduleNames = [];
+    globalClassNames = [];
+    globalFunctionNames = [];
+
     runApiFileInThisContext(meteorClientApiFile);
     _.forIn(DocsData, function (value, key) {  // Global var DocsData created in function runApiFileInThisContext()
         //if (value.locus !== currentLocusName) return;
@@ -725,35 +734,31 @@ var populateModuleAndGlobalClassNames = function (meteorClientApiFile) {
     moduleNames.push('Session'); // TODO: fix exception
     moduleNames.push('HTTP'); // TODO: fix exception
     moduleNames.push('Email'); // TODO: fix exception
-    moduleNames = _.filter(moduleNames, function (modName) {
-        return modName !== 'Plugin';
-    });
-    console.log('Global Modules: ' + JSON.stringify(moduleNames));
-    console.log('Global Classes: ' + JSON.stringify(globalClassNames));
+    if (currentLocusName === 'None') {
+        moduleNames = _.filter(moduleNames, function (modName) {
+            return modName !== 'Plugin';
+        });
+    }
+    console.log('Locus: ' + currentLocusName + ', Global Modules: ' + JSON.stringify(moduleNames));
+    console.log('Locus: ' + currentLocusName + ', Global Classes: ' + JSON.stringify(globalClassNames));
 
 };
 
 var createMeteorDefFiles = function createMeteorDefFiles() {
-    //var allMeteorDefsContent = '';
-    
     require('request')(METEOR_API_URL, function (error, response, body) {
         if (error || body.length < 10) {
             console.log('Error retrieving data.js from ' + METEOR_API_URL + ': ' + error);
             return;
         }
         writeFileToDisk(SAVED_METEOR_API_FILE_PATH, body);
-        populateModuleAndGlobalClassNames(body);
-        
-        _.each(METEOR_FILE_CONFIGS, function(config) {
+
+        _.each(METEOR_LOCUS_CONFIGS, function (config) {
             currentLocusName = config.locus;
+            populateModuleAndGlobalClassNames(body);
             var meteorDefsContent = parseClientMeteorApi(body);
-            //allMeteorDefsContent += meteorDefsContent;
             meteorDefsContent = addManuallyMaintainedDefs() + meteorDefsContent;
             writeFileToDisk(DEF_DIR + config.fileName, meteorDefsContent);
         });
-
-        //allMeteorDefsContent = addManuallyMaintainedDefs() + allMeteorDefsContent;
-        //writeFileToDisk(DEF_DIR + METEOR_DEF_FILENAME, allMeteorDefsContent);
     });
 };
 

@@ -473,6 +473,9 @@ declare module Npm {
 declare module Package {
 }
 
+declare module Plugin {
+}
+
 declare module Tracker {
 	function Computation(): void;
 	interface Computation {
