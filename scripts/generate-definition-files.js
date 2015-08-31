@@ -20,17 +20,26 @@ var vm = require('vm'),
     TINYTEST_TEST_DIR = './tinytest-definition-tests/',
     TINYTEST_DEF_BASE_PATH = '../../meteortypescript_typescript-libs/',
     METEOR_API_URL = 'https://raw.githubusercontent.com/meteor/meteor/devel/docs/client/data.js',
-    SAVED_METEOR_API_FILE_PATH = './lib/data.js';
-MANUALLY_MAINTAINED_DEFS_FILE = './lib/meteor-manually-maintained-definitions.d.ts',
-    METEOR_DEF_FILENAME = 'meteor.d.ts',
+    SAVED_METEOR_API_FILE_PATH = './lib/data.js',
+    MANUALLY_MAINTAINED_DEFS_FILE = './lib/meteor-manually-maintained-definitions.d.ts',
+    //METEOR_DEF_FILENAME = 'meteor.d.ts',
     DEBUG = true,
     definitionFilenames = [], // References to these files will be written to the master definition file
     testFilenames = ['meteor-tests.ts'],
     moduleNames = [],
-    globalClassNames = [];
-globalFunctionNames = [];
+    globalClassNames = [],
+    globalFunctionNames = [],
+    currentLocusName = null;
 // Global var DocsData created in function runApiFileInThisContext()
 
+
+var METEOR_FILE_CONFIGS = [
+    {locus: 'None', fileName: 'meteor.d.ts'},
+    {locus: 'Anywhere', fileName: 'meteor.common.d.ts'},
+    {locus: 'Client', fileName: 'meteor.client.d.ts'},
+    {locus: 'Server', fileName: 'meteor.server.d.ts'},
+    {locus: 'package.js', fileName: 'meteor.package.d.ts'}
+];
 
 // Not currently called -- not sure how to automatically generate latest lib.d.ts
 var typescriptCoreLibs = [
@@ -575,7 +584,25 @@ var createVar = function createVar(apiDef, tabs, isInInterface) {
     return signature;
 };
 
+//var UNSPECIFIED_LOCUS_LONG_NAMES = [
+//    { 'EJSON.CustomType': ['Anywhere', 'Client', 'Server'] }
+//];
+
+var includeInCurrentLocus = function includeInCurrentLocus(apiDef) {
+    if (currentLocusName === 'None') return true;
+    if (!apiDef.locus) return true;
+    if (apiDef.locus === currentLocusName) return true;
+    return false;
+    //if (UNSPECIFIED_LOCUS_LONG_NAMES[apiDef.longname] && UNSPECIFIED_LOCUS_LONG_NAMES[apiDef.longname].indexOf(apiDef.currentLocusName) > -1) {
+    //    return true;
+    //} else {
+    //    return false;
+    //}
+};
+
 var createFunction = function createFunction(apiDef, tabs, isInInterface) {
+    if (!includeInCurrentLocus) return;
+
     var signature = tabs || '';
 
     if (!isInInterface) signature += 'function ';
@@ -595,17 +622,17 @@ var createModuleInnerContent = function (moduleOrInterfaceName, tabs, isInterfac
     tabs = tabs || '';
     var content = '';
     _.forIn(DocsData, function (apiDef) {  // Global var DocsData created in function runApiFileInThisContext()
+        if (!includeInCurrentLocus(apiDef)) return;
+
         if (apiDef.memberof === moduleOrInterfaceName) {
             if (apiDef.longname === 'Template.dynamic') return;  // Special case since it's just for use in templates
             if (scope && apiDef.scope !== scope) return;
             //if (apiDef) console.log('apiDef.longname = ' + apiDef.longname + 'apiDef.scope = ' + apiDef.scope);
 
             // Exception case for errors in data.js definitions file
-             if (moduleOrInterfaceName === 'Accounts'
+            if (moduleOrInterfaceName === 'Accounts'
                 && ['Accounts.onResetPasswordLink', 'Accounts.onEnrollmentLink', 'Accounts.onEmailVerificationLink'].indexOf(apiDef.longname) > -1) {
-                console.log('old name = ' + apiDef.name);
                 apiDef.name = apiDef.name.replace(/\.(.+)/, '$1');
-                console.log('new name = ' + apiDef.name);
                 content += createFunction(apiDef, '\t' + tabs, isInterface);
                 return;
             }
@@ -637,6 +664,7 @@ var createModuleInnerContent = function (moduleOrInterfaceName, tabs, isInterfac
 var createGlobalFunctions = function createGlobalFunctions() {
     var allFunctionsContent = '';
     _.each(globalFunctionNames, function (functionName) {
+        if (!includeInCurrentLocus(DocsData[functionName])) return;
         allFunctionsContent += 'declare ' + createFunction(DocsData[functionName], ''); // Global var DocsData created in function runApiFileInThisContext()
     });
     return allFunctionsContent;
@@ -658,8 +686,7 @@ var createModules = function () {
         moduleContent += 'declare module ' + moduleName + ' {\n';
         moduleContent += createModuleInnerContent(moduleName);
         if (moduleName === 'Accounts') {
-            _.each(accountsClassesInModules, function(className) {
-                console.log('***** creating inner content for ' + className);
+            _.each(accountsClassesInModules, function (className) {
                 moduleContent += createModuleInnerContent(className);
             });
         }
@@ -672,7 +699,7 @@ var createModules = function () {
 var parseClientMeteorApi = function (meteorClientApiFile) {
     runApiFileInThisContext(meteorClientApiFile); // Makes var DocsData in meterClientApiFile accessible as a global var
     var stubFileContent = '';
-    stubFileContent += addManuallyMaintainedDefs();
+    //stubFileContent += addManuallyMaintainedDefs();
     stubFileContent += createModules();
     stubFileContent += createGlobalClasses();
     stubFileContent += createGlobalFunctions();
@@ -682,6 +709,8 @@ var parseClientMeteorApi = function (meteorClientApiFile) {
 var populateModuleAndGlobalClassNames = function (meteorClientApiFile) {
     runApiFileInThisContext(meteorClientApiFile);
     _.forIn(DocsData, function (value, key) {  // Global var DocsData created in function runApiFileInThisContext()
+        //if (value.locus !== currentLocusName) return;
+
         if (value.kind === 'namespace' && !value.memberof) {
             moduleNames.push(key);
         }
@@ -704,7 +733,9 @@ var populateModuleAndGlobalClassNames = function (meteorClientApiFile) {
 
 };
 
-var createMeteorDefFile = function () {
+var createMeteorDefFiles = function createMeteorDefFiles() {
+    //var allMeteorDefsContent = '';
+    
     require('request')(METEOR_API_URL, function (error, response, body) {
         if (error || body.length < 10) {
             console.log('Error retrieving data.js from ' + METEOR_API_URL + ': ' + error);
@@ -712,12 +743,21 @@ var createMeteorDefFile = function () {
         }
         writeFileToDisk(SAVED_METEOR_API_FILE_PATH, body);
         populateModuleAndGlobalClassNames(body);
-        var meteorDefsContent = parseClientMeteorApi(body);
-        writeFileToDisk(DEF_DIR + METEOR_DEF_FILENAME, meteorDefsContent);
+        
+        _.each(METEOR_FILE_CONFIGS, function(config) {
+            currentLocusName = config.locus;
+            var meteorDefsContent = parseClientMeteorApi(body);
+            //allMeteorDefsContent += meteorDefsContent;
+            meteorDefsContent = addManuallyMaintainedDefs() + meteorDefsContent;
+            writeFileToDisk(DEF_DIR + config.fileName, meteorDefsContent);
+        });
+
+        //allMeteorDefsContent = addManuallyMaintainedDefs() + allMeteorDefsContent;
+        //writeFileToDisk(DEF_DIR + METEOR_DEF_FILENAME, allMeteorDefsContent);
     });
 };
 
-createMeteorDefFile();
+createMeteorDefFiles();
 //createTypeScriptLibFile();  Not currently working -- not sure how to generated latest typescript lib.d.ts file
 getThirdPartyDefLibs();
 getThirdPartyDefTests();
