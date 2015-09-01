@@ -21,7 +21,7 @@ var vm = require('vm'),
     TINYTEST_DEF_BASE_PATH = '../../meteortypescript_typescript-libs/',
     METEOR_API_URL = 'https://raw.githubusercontent.com/meteor/meteor/devel/docs/client/data.js',
     SAVED_METEOR_API_FILE_PATH = './lib/data.js',
-    MANUALLY_MAINTAINED_DEFS_FILE = './lib/meteor-manually-maintained-definitions.d.ts',
+    METEOR_HEADER_FILE = './lib/meteor-definitions-header.d.ts',
 //METEOR_DEF_FILENAME = 'meteor.d.ts',
     DEBUG = true,
     definitionFilenames = [], // References to these files will be written to the master definition file
@@ -29,18 +29,18 @@ var vm = require('vm'),
     moduleNames = [],
     globalClassNames = [],
     globalFunctionNames = [],
-    currentLocusName = null;
+    currentLocusID = null;
 // Global var DocsData created in function runApiFileInThisContext()
 
 
-var METEOR_LOCUS_CONFIGS = [
-    {locus: 'None', fileName: 'meteor.d.ts'},
-    {locus: 'Anywhere', fileName: 'meteor.common.d.ts'},
-    {locus: 'Client', fileName: 'meteor.client.d.ts'},
-    {locus: 'Server', fileName: 'meteor.server.d.ts'},
-    {locus: 'package.js', fileName: 'meteor.package.d.ts'},
-    {locus: 'Build Plugin', fileName: 'meteor.build.d.ts'}
-];
+var METEOR_LOCUS_CONFIGS = {
+    none: {locusID: 'None', fileName: 'meteor.d.ts'},
+    common: {locusID: 'Anywhere', manualDefsFile: './lib/meteor-common-manually-maintained-definitions.d.ts', fileName: 'meteor.common.d.ts'},
+    client: {locusID: 'Client', manualDefsFile: './lib/meteor-client-manually-maintained-definitions.d.ts', fileName: 'meteor.client.d.ts'},
+    server: {locusID: 'Server', manualDefsFile: './lib/meteor-server-manually-maintained-definitions.d.ts', fileName: 'meteor.server.d.ts'},
+    package: {locusID: 'package.js', manualDefsFile: './lib/meteor-package-manually-maintained-definitions.d.ts', fileName: 'meteor.package.d.ts'},
+    plugin: {locusID: 'Build Plugin', fileName: 'meteor.build.d.ts'}
+};
 
 // Not currently called -- not sure how to automatically generate latest lib.d.ts
 var typescriptCoreLibs = [
@@ -458,11 +458,21 @@ var writeFileToDisk = function (path, content) {
     });
 };
 
-var addManuallyMaintainedDefs = function () {
-    var interfaces = fs.readFileSync(MANUALLY_MAINTAINED_DEFS_FILE);
-    interfaces += '\n';
-    return interfaces;
+var getFileContents = function getFileContents(filePath) {
+    if (!filePath) return '';
+
+    var contents = fs.readFileSync(filePath);
+    contents += '\n';
+    return contents;
 };
+
+//var addManuallyMaintainedDefs = function addManuallyMaintainedDefs(filePath) {
+//    if (!filePath) return '';
+//
+//    var interfaces = fs.readFileSync(filePath);
+//    interfaces += '\n';
+//    return interfaces;
+//};
 
 // Creates global var DocsData with contents of meteorClientApiFile
 var runApiFileInThisContext = function (meteorClientApiFile) {
@@ -594,11 +604,11 @@ var createVar = function createVar(apiDef, tabs, isInInterface) {
 //];
 
 var includeInCurrentLocus = function includeInCurrentLocus(apiDef) {
-    if (currentLocusName === 'None') return true;
+    if (currentLocusID === 'None') return true;
     if (!apiDef.locus) return true;
-    if (apiDef.locus === currentLocusName) return true;
+    if (apiDef.locus === currentLocusID) return true;
     return false;
-    //if (UNSPECIFIED_LOCUS_LONG_NAMES[apiDef.longname] && UNSPECIFIED_LOCUS_LONG_NAMES[apiDef.longname].indexOf(apiDef.currentLocusName) > -1) {
+    //if (UNSPECIFIED_LOCUS_LONG_NAMES[apiDef.longname] && UNSPECIFIED_LOCUS_LONG_NAMES[apiDef.longname].indexOf(apiDef.currentLocusID) > -1) {
     //    return true;
     //} else {
     //    return false;
@@ -718,7 +728,7 @@ var populateModuleAndGlobalClassNames = function (meteorClientApiFile) {
 
     runApiFileInThisContext(meteorClientApiFile);
     _.forIn(DocsData, function (value, key) {  // Global var DocsData created in function runApiFileInThisContext()
-        //if (value.locus !== currentLocusName) return;
+        //if (value.locus !== currentLocusID) return;
 
         if (value.kind === 'namespace' && !value.memberof) {
             moduleNames.push(key);
@@ -734,15 +744,17 @@ var populateModuleAndGlobalClassNames = function (meteorClientApiFile) {
     moduleNames.push('Session'); // TODO: fix exception
     moduleNames.push('HTTP'); // TODO: fix exception
     moduleNames.push('Email'); // TODO: fix exception
-    if (currentLocusName === 'None') {
+    if (currentLocusID === 'None') {
         moduleNames = _.filter(moduleNames, function (modName) {
             return modName !== 'Plugin';
         });
     }
-    console.log('Locus: ' + currentLocusName + ', Global Modules: ' + JSON.stringify(moduleNames));
-    console.log('Locus: ' + currentLocusName + ', Global Classes: ' + JSON.stringify(globalClassNames));
+    console.log('Locus: ' + currentLocusID + ', Global Modules: ' + JSON.stringify(moduleNames));
+    console.log('Locus: ' + currentLocusID + ', Global Classes: ' + JSON.stringify(globalClassNames));
 
 };
+
+
 
 var createMeteorDefFiles = function createMeteorDefFiles() {
     require('request')(METEOR_API_URL, function (error, response, body) {
@@ -753,10 +765,20 @@ var createMeteorDefFiles = function createMeteorDefFiles() {
         writeFileToDisk(SAVED_METEOR_API_FILE_PATH, body);
 
         _.each(METEOR_LOCUS_CONFIGS, function (config) {
-            currentLocusName = config.locus;
+            currentLocusID = config.locusID;
             populateModuleAndGlobalClassNames(body);
             var meteorDefsContent = parseClientMeteorApi(body);
-            meteorDefsContent = addManuallyMaintainedDefs() + meteorDefsContent;
+            if (currentLocusID === 'None') {
+                meteorDefsContent =
+                    getFileContents(METEOR_HEADER_FILE)
+                    + getFileContents(METEOR_LOCUS_CONFIGS.common.manualDefsFile)
+                    + getFileContents(METEOR_LOCUS_CONFIGS.client.manualDefsFile)
+                    + getFileContents(METEOR_LOCUS_CONFIGS.server.manualDefsFile)
+                    + getFileContents(METEOR_LOCUS_CONFIGS.package.manualDefsFile)
+                    + meteorDefsContent;
+            } else {
+                meteorDefsContent = getFileContents(METEOR_HEADER_FILE) + getFileContents(config.manualDefsFile) + meteorDefsContent;
+            }
             writeFileToDisk(DEF_DIR + config.fileName, meteorDefsContent);
         });
     });
