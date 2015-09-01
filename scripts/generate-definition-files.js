@@ -466,14 +466,6 @@ var getFileContents = function getFileContents(filePath) {
     return contents;
 };
 
-//var addManuallyMaintainedDefs = function addManuallyMaintainedDefs(filePath) {
-//    if (!filePath) return '';
-//
-//    var interfaces = fs.readFileSync(filePath);
-//    interfaces += '\n';
-//    return interfaces;
-//};
-
 // Creates global var DocsData with contents of meteorClientApiFile
 var runApiFileInThisContext = function (meteorClientApiFile) {
     vm.runInThisContext("DocsData = {};" + meteorClientApiFile);
@@ -554,7 +546,7 @@ var createDecomposedClass = function (apiDef, tabs) {
     classContent += replaceSignatureElements(constructorSignature);
 
     // Exception case for Template
-    if (apiDef.name === 'Template') {
+    if (apiDef.name === 'Template' && (currentLocusID === 'Client' || currentLocusID === 'None')) {
         classContent +=
             tabs + '\t// It should be [templateName: string]: TemplateInstance but this is not possible -- user will need to cast to TemplateInstance\n' +
             tabs + '\t[templateName: string]: any | Template; // added "any" to make it work\n' +
@@ -568,13 +560,13 @@ var createDecomposedClass = function (apiDef, tabs) {
     classContent += tabs + '}\n';
 
     // Exception case for Meteor.Error since it is improperly defined in official JSON.
-    if (apiDef.longname === 'Meteor.Error') {
+    if (apiDef.longname === 'Meteor.Error' && (currentLocusID === 'Anywhere' || currentLocusID === 'None')) {
         classContent +=
             tabs + 'interface Error {\n' +
             tabs + '\terror: string;\n' +
             tabs + '\treason?: string;\n' +
             tabs + '\tdetails?: string;\n' +
-            tabs + '}\n'
+            tabs + '}\n';
         return classContent;
     }
 
