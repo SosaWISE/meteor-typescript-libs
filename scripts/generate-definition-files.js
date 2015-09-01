@@ -183,7 +183,7 @@ var propertyAndReturnTypeMappings = {
     'Mongo.Cursor#count': 'number',
     'Mongo.Cursor#fetch': 'Array<T>',
     'Mongo.Cursor#forEach': 'void',
-    'Mongo.Cursor#map': 'Array<T>',
+    'Mongo.Cursor#map': 'Array<Any>',
     'Mongo.Cursor#observe': 'Meteor.LiveQueryHandle',
     'Mongo.Cursor#observeChanges': 'Meteor.LiveQueryHandle',
     'Plugin.registerSourceHandler': 'void',
