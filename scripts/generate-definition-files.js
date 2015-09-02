@@ -147,7 +147,8 @@ var signatureElementMappings = {
     'insert\\?: \\(userId:string, doc\\)': 'insert?: (userId: string, doc: T)',
     'update\\?: \\(userId, doc, fieldNames, modifier\\)': 'update?: (userId: string, doc: T, fieldNames: string[], modifier: any)',
     'remove\\?: \\(userId, doc\\)': 'remove?: (userId: string, doc: T)',
-    'exportOptions\\.testOnly:': 'testOnly?:'
+    'exportOptions\\.testOnly:': 'testOnly?:',
+    'map\\(callback: <T>\\(doc: T, index: number, cursor: Mongo.Cursor<T>\\) => void':  'map<U>(callback: (doc: T, index: number, cursor: Mongo.Cursor<T>) => U'
 };
 
 var propertyAndReturnTypeMappings = {
@@ -193,7 +194,7 @@ var propertyAndReturnTypeMappings = {
     'Mongo.Cursor#count': 'number',
     'Mongo.Cursor#fetch': 'Array<T>',
     'Mongo.Cursor#forEach': 'void',
-    'Mongo.Cursor#map': 'Array<T>',
+    'Mongo.Cursor#map': 'Array<U>',
     'Mongo.Cursor#observe': 'Meteor.LiveQueryHandle',
     'Mongo.Cursor#observeChanges': 'Meteor.LiveQueryHandle',
     'Plugin.registerSourceHandler': 'void',
@@ -617,6 +618,7 @@ var createFunction = function createFunction(apiDef, tabs, isInInterface) {
     signature += addGenerics(apiDef.longname);
     signature += createArgs(apiDef);
     signature += addPropertyOrReturnTypeAndComplete(apiDef.longname, apiDef.returns);
+    if (apiDef.longname === 'Mongo.Cursor#map') console.log('Mongo.Cursor#map, sig = ' + signature);
     signature = replaceSignatureElements(signature);    // This is the nuclear option: replace anything missed earlier
     signature += '\n';
 
