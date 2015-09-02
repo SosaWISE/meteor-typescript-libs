@@ -1,6 +1,6 @@
 # Meteor TypeScript libraries
 
-This project adds TypeScript definition files related to Meteor.  It includes *meteor.d.ts* plus many others.  These are definitions for Meteor 1.1.0.2, and they require TypeScript 1.4 or higher (to allow Union types).  These definitions are mostly backwards compatible for any 1.* Meteor version.
+This project adds TypeScript definition files related to Meteor.  It includes *meteor.d.ts* plus many others.  These are definitions for Meteor 1.1.0.3, and they require TypeScript 1.4 or higher (to allow Union types).  These definitions are mostly backwards compatible for any 1.* Meteor version.
 
 ## Why use TypeScript?
 [TypeScript](http://www.typescriptlang.org/) enforces a *relaxed* static typing transpiler to Javascript. It is an opinionated attempt to build an elegant language on top of a crappy, yet popular platform.
@@ -15,7 +15,8 @@ For further reading about TypeScript, please refer to the [TypeScript Handbook](
 
         $ ln -s ../.meteor/local/build/programs/server/assets/packages/meteortypescript_typescript-libs/definitions package_defs
 
-   If the definitions can't be found within the .meteor directory, you will have to manually pull down the definitions from github and add them to your project:
+    If the definitions can't be found within the .meteor directory, you will have to manually pull down the definitions from github and add them to your project:
+    
     <https://github.com/meteor-typescript/meteor-typescript-libs>
 
 2. Install the [Typescript compiler for Meteor](https://github.com/meteor-typescript/meteor-typescript-compiler) or an [IDE which can transpile TypeScript to JavaScript](#transpiling-typescript).
@@ -23,11 +24,22 @@ For further reading about TypeScript, please refer to the [TypeScript Handbook](
 
         /// <reference path=".typescript/package_defs/all-definitions.d.ts" />  (substitute path in your project)
 
-   Or you can reference definition files individually:
+    Or you can reference definition files individually:
    
-        /// <reference path=".typescript/package_defs/meteor.d.ts" />  (substitue path in your project)
+        /// <reference path=".typescript/package_defs/meteor.d.ts" />  (substitute path in your project)
         /// <reference path=".typescript/package_defs/underscore.d.ts" />
         /// <reference path=".typescript/package_defs/jquery.d.ts" />
+
+    Meteor core definitions can be referenced in an "all-in-one" definition file ( *meteor.d.ts* ) or definition files specific to the locus of execution:
+   
+       - *meteor.d.ts*:  all meteor core definitions
+       - *meteor.common.d.ts*:  meteor core code running on both client and server
+       - *meteor.client.d.ts*:  meteor core client only code
+       - *meteor.server.d.ts*:  meteor core server only code
+       - *meteor.package.d.ts*:  meteor core package only code
+       - *meteor.build.d.ts*:  meteor core build code
+       
+    *meteor.d.ts* contains all of the definitions found in *meteor.common.d.ts*, *meteor.client.d.ts*, *meteor.server.d.ts*, *meteor.package.d.ts*, and *meteor.build.d.ts* 
 
 4. Be aware of differences in coding styles when using TypeScript (see below)
 
@@ -38,7 +50,7 @@ For further reading about TypeScript, please refer to the [TypeScript Handbook](
 
 Meteor code can run on the client and the server, for this reason you should try to stay away from referencing *file.ts* directly: you may get unexpected results.
 
-Rather generate a *file.d.ts* using `tsc --reference file.ts`, and reference it in your file. 
+Rather generate a *file.d.ts* using `tsc --declaration file.ts`, and reference it in your file. 
   
 Compilation will be much faster and code will be cleaner - it's always better to split definition from implementation anyways.
 
@@ -136,10 +148,10 @@ The last option is to compile code from the command line. With node and the Type
 
 Contributions are welcome. Remember that this project is about typing meteor packages in TypeScript.
 
-* Most changes to the meteor definitions file, "meteor.d.ts", should be made by altering "scripts/generate-definition-files.js".  Often, fixing a type/signature mapping near the top is all that is necessary.  Corresponding changes should also be made to "script-definition-tests/meteor-tests.ts" and "tinytest-definition-tests/meteor-tests.ts".
-    * Some definitions in "meteor.d.ts" can be found in `lib/meteor-manually-maintained-definitions.d.ts`, which contains definitions that can't be automatically generated.
-* Changes to the definitions for any third party libraries (e.g. jquery.d.ts) should be made on the [DefinitelyTyped repo](https://github.com/borisyankov/DefinitelyTyped).
 * Changes to the smart package definitions can be made directly to those definition files (e.g. ironrouter.d.ts).
+* Changes to the definitions for any third party libraries (e.g. jquery.d.ts) should be made on the [DefinitelyTyped repo](https://github.com/borisyankov/DefinitelyTyped).
+* Most changes to the meteor definitions file, "meteor.d.ts", should be made by altering "scripts/generate-definition-files.js".  Often, fixing a type/signature mapping near the top is all that is necessary.  Corresponding changes should also be made to "script-definition-tests/meteor-tests.ts" and "tinytest-definition-tests/meteor-tests.ts".
+    * Some definitions in "meteor.d.ts" can be found in "lib/meteor-manually-maintained-definitions.d.ts", which contains definitions that can't be automatically generated.
 
 *It would be great if someone developing on Windows could add to the Usage section with instructions for Windows!*
 
@@ -149,7 +161,7 @@ All definition files in this Meteor package are generated by executing the makef
 
     $ make
 
-The makefile generates *meteor.d.ts* from the same [Meteor data.js file](https://github.com/meteor/meteor/blob/devel/docs/client/data.js) that is used to generate the official [Meteor docs](http://docs.meteor.com/).
+The makefile generates *meteor.d.ts, meteor.common.d.ts, meteor.client.d.ts, meteor.server.d.ts, meteor.package.d.ts, and meteor.package.d.ts* from the same [Meteor data.js file](https://github.com/meteor/meteor/blob/devel/docs/client/data.js) that is used to generate the official [Meteor docs](http://docs.meteor.com/).
 
 This script also retrieves the latest third-party library definitions from the [DefinitelyTyped](https://github.com/borisyankov/DefinitelyTyped) repo, which is the semi-official repository for TypeScript definition files.  Running this script will also run any specified tests found on [DefinitelyTyped](https://github.com/borisyankov/DefinitelyTyped) as well as the tests for meteor.d.ts and any other meteor packages.  All tests that are run can be found in "script-definition-tests/".
 

@@ -20,17 +20,27 @@ var vm = require('vm'),
     TINYTEST_TEST_DIR = './tinytest-definition-tests/',
     TINYTEST_DEF_BASE_PATH = '../../meteortypescript_typescript-libs/',
     METEOR_API_URL = 'https://raw.githubusercontent.com/meteor/meteor/devel/docs/client/data.js',
-    SAVED_METEOR_API_FILE_PATH = './lib/data.js';
-    MANUALLY_MAINTAINED_DEFS_FILE = './lib/meteor-manually-maintained-definitions.d.ts',
-    METEOR_DEF_FILENAME = 'meteor.d.ts',
+    SAVED_METEOR_API_FILE_PATH = './lib/data.js',
+    METEOR_HEADER_FILE = './lib/meteor-definitions-header.d.ts',
+//METEOR_DEF_FILENAME = 'meteor.d.ts',
     DEBUG = true,
     definitionFilenames = [], // References to these files will be written to the master definition file
     testFilenames = ['meteor-tests.ts'],
     moduleNames = [],
-    globalClassNames = [];
-    globalFunctionNames = [];
+    globalClassNames = [],
+    globalFunctionNames = [],
+    currentLocusID = null;
 // Global var DocsData created in function runApiFileInThisContext()
 
+
+var METEOR_LOCUS_CONFIGS = {
+    none: {locusID: 'None', fileName: 'meteor.d.ts'},
+    common: {locusID: 'Anywhere', manualDefsFile: './lib/meteor-common-manually-maintained-definitions.d.ts', fileName: 'meteor.common.d.ts'},
+    client: {locusID: 'Client', manualDefsFile: './lib/meteor-client-manually-maintained-definitions.d.ts', fileName: 'meteor.client.d.ts'},
+    server: {locusID: 'Server', manualDefsFile: './lib/meteor-server-manually-maintained-definitions.d.ts', fileName: 'meteor.server.d.ts'},
+    package: {locusID: 'package.js', manualDefsFile: './lib/meteor-package-manually-maintained-definitions.d.ts', fileName: 'meteor.package.d.ts'},
+    plugin: {locusID: 'Build Plugin', fileName: 'meteor.build.d.ts'}
+};
 
 // Not currently called -- not sure how to automatically generate latest lib.d.ts
 var typescriptCoreLibs = [
@@ -87,7 +97,7 @@ var argTypeMappings = {
     'DOMNode': 'Node',
     'EventMap': 'Meteor.EventMap',
     'MongoFieldSpecifier': 'Mongo.FieldSpecifier',
-    'Number':'number',
+    'Number': 'number',
     'Integer': 'number',
     'Any': 'any',
     'function:': 'func:',
@@ -136,7 +146,9 @@ var signatureElementMappings = {
 
     'insert\\?: \\(userId:string, doc\\)': 'insert?: (userId: string, doc: T)',
     'update\\?: \\(userId, doc, fieldNames, modifier\\)': 'update?: (userId: string, doc: T, fieldNames: string[], modifier: any)',
-    'remove\\?: \\(userId, doc\\)': 'remove?: (userId: string, doc: T)'
+    'remove\\?: \\(userId, doc\\)': 'remove?: (userId: string, doc: T)',
+    'exportOptions\\.testOnly:': 'testOnly?:',
+    'map\\(callback: <T>\\(doc: T, index: number, cursor: Mongo.Cursor<T>\\) => void':  'map<U>(callback: (doc: T, index: number, cursor: Mongo.Cursor<T>) => U'
 };
 
 var propertyAndReturnTypeMappings = {
@@ -182,7 +194,7 @@ var propertyAndReturnTypeMappings = {
     'Mongo.Cursor#count': 'number',
     'Mongo.Cursor#fetch': 'Array<T>',
     'Mongo.Cursor#forEach': 'void',
-    'Mongo.Cursor#map': 'Array<T>',
+    'Mongo.Cursor#map': 'Array<U>',
     'Mongo.Cursor#observe': 'Meteor.LiveQueryHandle',
     'Mongo.Cursor#observeChanges': 'Meteor.LiveQueryHandle',
     'Plugin.registerSourceHandler': 'void',
@@ -347,13 +359,17 @@ var propertyAndReturnTypeMappings = {
 
     'check': 'void',
 
-    'DDPCommon.MethodInvocation': 'any'
+    'DDPCommon.MethodInvocation': 'any',
 
+    'Plugin.registerCompiler': 'void',
+    'Plugin.registerLinter': 'void',
+    'Plugin.registerMinifier': 'void',
+    'Plugin.registerSourceHandler': 'void'
 };
 
-var getThirdPartyDefLibs = function() {
-    _.each(thirdPartyDefLibs, function(lib) {
-        require('request')(lib, function(error, response, body) {
+var getThirdPartyDefLibs = function () {
+    _.each(thirdPartyDefLibs, function (lib) {
+        require('request')(lib, function (error, response, body) {
             var filename = lib.slice(lib.lastIndexOf('/') + 1);
             if (hasString(lib, '/core.d.ts')) filename = filename.replace('core', 'lib');
             filename = filename.replace('node-0.11.d.ts', 'node.d.ts');
@@ -365,15 +381,16 @@ var getThirdPartyDefLibs = function() {
     });
 };
 
-var getThirdPartyDefTests = function() {
-    _.each(thirdPartyDefTests, function(test) {
-        require('request')(test, function(error, response, body) {
+var getThirdPartyDefTests = function () {
+    _.each(thirdPartyDefTests, function (test) {
+        require('request')(test, function (error, response, body) {
             var filename = test.slice(test.lastIndexOf('/') + 1);
             filename = filename.replace('node-0.11-tests.ts', 'node-tests.ts');
             testFilenames.push(filename);
             //var originalBody = JSON.parse(JSON.stringify(body));
             body = body.replace('../jquery/jquery.d.ts', 'jquery.d.ts');
             body = body.replace('../underscore/underscore.d.ts', 'underscore.d.ts');
+            body = body.replace('node-0.11.d.ts', 'node.d.ts');
             body = body.replace(/path=["'\.\/]+(.+\.d\.ts)["']\s?\/>/g, 'path="../definitions/$1" />');
             writeFileToDisk(SCRIPT_TEST_DIR + filename, body);
 
@@ -385,18 +402,18 @@ var getThirdPartyDefTests = function() {
 };
 
 // Not currently used -- not sure how to automatically generate latest lib.d.ts
-var createTypeScriptLibFile = function() {
+var createTypeScriptLibFile = function () {
     fs.truncate(DEF_DIR + 'lib.d.ts');
-    _.each(typescriptCoreLibs, function(lib) {
-        setTimeout(function() {
-            require('request')(lib, function(error, response, body) {
+    _.each(typescriptCoreLibs, function (lib) {
+        setTimeout(function () {
+            require('request')(lib, function (error, response, body) {
                 fs.appendFile(DEF_DIR + 'lib.d.ts', body);
             })
         }, 500);
     });
 };
 
-var replaceIrregularArgTypes = function(argSection) {
+var replaceIrregularArgTypes = function (argSection) {
     for (var key in argTypeMappings) {
         // Needs to use the RegExp form of replace so can be global in case of multiple arg types
         argSection = argSection.replace(key, argTypeMappings[key]);
@@ -404,7 +421,7 @@ var replaceIrregularArgTypes = function(argSection) {
     return argSection;
 };
 
-var replaceSignatureElements = function(funcSignature) {
+var replaceSignatureElements = function (funcSignature) {
     for (var key in signatureElementMappings) {
         funcSignature = funcSignature.replace(new RegExp(key, 'g'), signatureElementMappings[key]);
     }
@@ -413,7 +430,7 @@ var replaceSignatureElements = function(funcSignature) {
 
 var classesWithGenerics = ['Mongo.Collection', 'Mongo.Cursor', 'ReactiveVar'];  // Need to add a generic type to interface definition
 
-var addGenerics = function(longName) {
+var addGenerics = function (longName) {
     if (_.contains(classesWithGenerics, longName)) {
         return '<T>';
     } else {
@@ -421,7 +438,7 @@ var addGenerics = function(longName) {
     }
 };
 
-var addPropertyOrReturnTypeAndComplete = function(longName, returns) {
+var addPropertyOrReturnTypeAndComplete = function (longName, returns) {
     var returnValue = propertyAndReturnTypeMappings[longName];
     if (returnValue && returnValue.length !== 0) {
         return ': ' + returnValue + ';';
@@ -432,7 +449,7 @@ var addPropertyOrReturnTypeAndComplete = function(longName, returns) {
     return DEBUG ? '; /** TODO: add return value **/' : ';';
 };
 
-var writeFileToDisk = function(path, content) {
+var writeFileToDisk = function (path, content) {
     fs.writeFile(path, content, function (err) {
         if (err) {
             console.log(err);
@@ -442,48 +459,26 @@ var writeFileToDisk = function(path, content) {
     });
 };
 
-var addManuallyMaintainedDefs = function() {
-    var interfaces = fs.readFileSync(MANUALLY_MAINTAINED_DEFS_FILE);
-    interfaces += '\n';
-    return interfaces;
+var getFileContents = function getFileContents(filePath) {
+    if (!filePath) return '';
+
+    var contents = fs.readFileSync(filePath);
+    contents += '\n';
+    return contents;
 };
 
 // Creates global var DocsData with contents of meteorClientApiFile
-var runApiFileInThisContext = function(meteorClientApiFile) {
+var runApiFileInThisContext = function (meteorClientApiFile) {
     vm.runInThisContext("DocsData = {};" + meteorClientApiFile);
 };
 
-var hasString = function(haystack, needle) {
+var hasString = function (haystack, needle) {
     return haystack.indexOf(needle) !== -1;
 };
 
-var populateModuleAndGlobalClassNames = function(meteorClientApiFile) {
-    runApiFileInThisContext(meteorClientApiFile);
-    _.forIn(DocsData, function (value, key) {  // Global var DocsData created in function runApiFileInThisContext()
-        if (value.kind === 'namespace' && !value.memberof) {
-            moduleNames.push(key);
-        }
-        if (value.kind === 'class' && !value.memberof) {
-            globalClassNames.push(key);
-        }
-        if (value.kind === 'function' && !value.memberof) {
-            globalFunctionNames.push(key);
-        }
-    });
-    moduleNames.push('Session'); // TODO: fix exception
-    moduleNames.push('HTTP'); // TODO: fix exception
-    moduleNames.push('Email'); // TODO: fix exception
-    moduleNames = _.filter(moduleNames, function(modName) {
-        return modName !== 'Plugin';
-    });
-    console.log('Global Modules: ' + JSON.stringify(moduleNames));
-    console.log('Global Classes: ' + JSON.stringify(globalClassNames));
-
-};
-
-var createArgTypes = function(argTypes) {
+var createArgTypes = function (argTypes) {
     var argTypesSection = '';
-    argTypes.forEach(function(type, index) {
+    argTypes.forEach(function (type, index) {
         type = replaceIrregularArgTypes(type);
         if (index === 0) {
             argTypesSection += type;
@@ -494,19 +489,19 @@ var createArgTypes = function(argTypes) {
     return argTypesSection;
 };
 
-var createArgs = function(apiDef) {
+var createArgs = function (apiDef) {
     var argSection = '(';
-    _.each(apiDef.params, function(param, index) {
+    _.each(apiDef.params, function (param, index) {
         argSection += param.name;
         if (param.optional) argSection += '?';
         if (param.name !== 'options') {
             argSection += ': ' + createArgTypes(param.type.names);
         } else {
             argSection += ': {\n';
-            apiDef.options.forEach(function(optionParam) {
+            apiDef.options.forEach(function (optionParam) {
                 if (hasString(optionParam.name, ',')) {     // Special case for App.info, Mongo.Collection#allow, Mongo.Collection#deny
                     var optionsArray = optionParam.name.split(',');
-                    optionsArray.forEach(function(singleOptionName) {
+                    optionsArray.forEach(function (singleOptionName) {
                         argSection += '\t\t\t\t' + singleOptionName + '?: ' + createArgTypes(optionParam.type.names) + ';\n';
                     });
                 } else {
@@ -543,7 +538,7 @@ var createSimpleClass = function createSimpleClass(apiDef, tabs) {
 // This serves two purposes:
 //     - enables ambient declaration of class
 //     - enables separation of static and instance vars and methods (for the case of Template)
-var createDecomposedClass = function(apiDef, tabs) {
+var createDecomposedClass = function (apiDef, tabs) {
     //console.log('Creating decomposed class, longName = ' + longName);
     tabs = tabs || '';
     var classContent = tabs + 'var ' + apiDef.name + ': ' + apiDef.name + 'Static;\n';
@@ -552,7 +547,7 @@ var createDecomposedClass = function(apiDef, tabs) {
     classContent += replaceSignatureElements(constructorSignature);
 
     // Exception case for Template
-    if (apiDef.name === 'Template') {
+    if (apiDef.name === 'Template' && (currentLocusID === 'Client' || currentLocusID === 'None')) {
         classContent +=
             tabs + '\t// It should be [templateName: string]: TemplateInstance but this is not possible -- user will need to cast to TemplateInstance\n' +
             tabs + '\t[templateName: string]: any | Template; // added "any" to make it work\n' +
@@ -566,13 +561,13 @@ var createDecomposedClass = function(apiDef, tabs) {
     classContent += tabs + '}\n';
 
     // Exception case for Meteor.Error since it is improperly defined in official JSON.
-    if (apiDef.longname === 'Meteor.Error') {
+    if (apiDef.longname === 'Meteor.Error' && (currentLocusID === 'Anywhere' || currentLocusID === 'None')) {
         classContent +=
             tabs + 'interface Error {\n' +
             tabs + '\terror: string;\n' +
             tabs + '\treason?: string;\n' +
             tabs + '\tdetails?: string;\n' +
-            tabs + '}\n'
+            tabs + '}\n';
         return classContent;
     }
 
@@ -583,26 +578,6 @@ var createDecomposedClass = function(apiDef, tabs) {
     }
     classContent += tabs + '}\n\n';
     return classContent;
-};
-
-var createGlobalClasses = function createGlobalClasses() {
-    var allClassesContent = '';
-
-    _.each(globalClassNames, function(className) {
-        allClassesContent += 'declare ' + createDecomposedClass(DocsData[className], ''); // Global var DocsData created in function runApiFileInThisContext()
-    });
-
-    return allClassesContent;
-};
-
-var createGlobalFunctions = function createGlobalFunctions() {
-    var allFunctionsContent = '';
-
-    _.each(globalFunctionNames, function(functionName) {
-        allFunctionsContent += 'declare ' + createFunction(DocsData[functionName], ''); // Global var DocsData created in function runApiFileInThisContext()
-    });
-
-    return allFunctionsContent;
 };
 
 var createVar = function createVar(apiDef, tabs, isInInterface) {
@@ -617,7 +592,25 @@ var createVar = function createVar(apiDef, tabs, isInInterface) {
     return signature;
 };
 
-var createFunction= function createFunction(apiDef, tabs, isInInterface) {
+//var UNSPECIFIED_LOCUS_LONG_NAMES = [
+//    { 'EJSON.CustomType': ['Anywhere', 'Client', 'Server'] }
+//];
+
+var includeInCurrentLocus = function includeInCurrentLocus(apiDef) {
+    if (currentLocusID === 'None') return true;
+    if (!apiDef.locus) return true;
+    if (apiDef.locus === currentLocusID) return true;
+    return false;
+    //if (UNSPECIFIED_LOCUS_LONG_NAMES[apiDef.longname] && UNSPECIFIED_LOCUS_LONG_NAMES[apiDef.longname].indexOf(apiDef.currentLocusID) > -1) {
+    //    return true;
+    //} else {
+    //    return false;
+    //}
+};
+
+var createFunction = function createFunction(apiDef, tabs, isInInterface) {
+    if (!includeInCurrentLocus) return;
+
     var signature = tabs || '';
 
     if (!isInInterface) signature += 'function ';
@@ -625,6 +618,7 @@ var createFunction= function createFunction(apiDef, tabs, isInInterface) {
     signature += addGenerics(apiDef.longname);
     signature += createArgs(apiDef);
     signature += addPropertyOrReturnTypeAndComplete(apiDef.longname, apiDef.returns);
+    if (apiDef.longname === 'Mongo.Cursor#map') console.log('Mongo.Cursor#map, sig = ' + signature);
     signature = replaceSignatureElements(signature);    // This is the nuclear option: replace anything missed earlier
     signature += '\n';
 
@@ -632,15 +626,25 @@ var createFunction= function createFunction(apiDef, tabs, isInInterface) {
 };
 
 // Recursively create contents for each module
-var createModuleInnerContent = function(moduleOrInterfaceName, tabs, isInterface, scope) {
+var createModuleInnerContent = function (moduleOrInterfaceName, tabs, isInterface, scope) {
     // console.log('createModuleInnerContent(), moduleOrInterfaceName = ' + moduleOrInterfaceName);
     tabs = tabs || '';
     var content = '';
     _.forIn(DocsData, function (apiDef) {  // Global var DocsData created in function runApiFileInThisContext()
+        if (!includeInCurrentLocus(apiDef)) return;
+
         if (apiDef.memberof === moduleOrInterfaceName) {
             if (apiDef.longname === 'Template.dynamic') return;  // Special case since it's just for use in templates
             if (scope && apiDef.scope !== scope) return;
             //if (apiDef) console.log('apiDef.longname = ' + apiDef.longname + 'apiDef.scope = ' + apiDef.scope);
+
+            // Exception case for errors in data.js definitions file
+            if (moduleOrInterfaceName === 'Accounts'
+                && ['Accounts.onResetPasswordLink', 'Accounts.onEnrollmentLink', 'Accounts.onEmailVerificationLink'].indexOf(apiDef.longname) > -1) {
+                apiDef.name = apiDef.name.replace(/\.(.+)/, '$1');
+                content += createFunction(apiDef, '\t' + tabs, isInterface);
+                return;
+            }
             switch (apiDef.kind) {
                 case 'namespace':
                     //console.log('Found namespace, longname = ' + apiDef.longname);
@@ -666,44 +670,115 @@ var createModuleInnerContent = function(moduleOrInterfaceName, tabs, isInterface
     return content;
 };
 
-var createModules = function() {
-    var allModulesContent = '';
+var createGlobalFunctions = function createGlobalFunctions() {
+    var allFunctionsContent = '';
+    _.each(globalFunctionNames, function (functionName) {
+        if (!includeInCurrentLocus(DocsData[functionName])) return;
+        allFunctionsContent += 'declare ' + createFunction(DocsData[functionName], ''); // Global var DocsData created in function runApiFileInThisContext()
+    });
+    return allFunctionsContent;
+};
 
-    _.each(moduleNames, function(moduleName) {
+var accountsClassesInModules = ['AccountsCommon', 'AccountsClient', 'AccountsServer'];
+
+var createGlobalClasses = function createGlobalClasses() {
+    var allClassesContent = '';
+    _.each(globalClassNames, function (className) {
+        allClassesContent += 'declare ' + createDecomposedClass(DocsData[className], ''); // Global var DocsData created in function runApiFileInThisContext()
+    });
+    return allClassesContent;
+};
+var createModules = function () {
+    var allModulesContent = '';
+    _.each(moduleNames, function (moduleName) {
         var moduleContent = '';
         moduleContent += 'declare module ' + moduleName + ' {\n';
         moduleContent += createModuleInnerContent(moduleName);
+        if (moduleName === 'Accounts') {
+            _.each(accountsClassesInModules, function (className) {
+                moduleContent += createModuleInnerContent(className);
+            });
+        }
         moduleContent += '}\n\n';
         allModulesContent += moduleContent;
     });
-
     return allModulesContent;
 };
 
-var parseClientMeteorApi = function(meteorClientApiFile) {
+var parseClientMeteorApi = function (meteorClientApiFile) {
     runApiFileInThisContext(meteorClientApiFile); // Makes var DocsData in meterClientApiFile accessible as a global var
     var stubFileContent = '';
-    stubFileContent += addManuallyMaintainedDefs();
+    //stubFileContent += addManuallyMaintainedDefs();
     stubFileContent += createModules();
     stubFileContent += createGlobalClasses();
     stubFileContent += createGlobalFunctions();
     return stubFileContent;
 };
 
-var createMeteorDefFile = function() {
+var populateModuleAndGlobalClassNames = function (meteorClientApiFile) {
+    moduleNames = [];
+    globalClassNames = [];
+    globalFunctionNames = [];
+
+    runApiFileInThisContext(meteorClientApiFile);
+    _.forIn(DocsData, function (value, key) {  // Global var DocsData created in function runApiFileInThisContext()
+        //if (value.locus !== currentLocusID) return;
+
+        if (value.kind === 'namespace' && !value.memberof) {
+            moduleNames.push(key);
+        }
+        if (value.kind === 'class' && !value.memberof) {
+            if (accountsClassesInModules.indexOf(key) > -1) return;
+            globalClassNames.push(key);
+        }
+        if (value.kind === 'function' && !value.memberof) {
+            globalFunctionNames.push(key);
+        }
+    });
+    moduleNames.push('Session'); // TODO: fix exception
+    moduleNames.push('HTTP'); // TODO: fix exception
+    moduleNames.push('Email'); // TODO: fix exception
+    if (currentLocusID === 'None') {
+        moduleNames = _.filter(moduleNames, function (modName) {
+            return modName !== 'Plugin';
+        });
+    }
+    console.log('Locus: ' + currentLocusID + ', Global Modules: ' + JSON.stringify(moduleNames));
+    console.log('Locus: ' + currentLocusID + ', Global Classes: ' + JSON.stringify(globalClassNames));
+
+};
+
+
+
+var createMeteorDefFiles = function createMeteorDefFiles() {
     require('request')(METEOR_API_URL, function (error, response, body) {
         if (error || body.length < 10) {
             console.log('Error retrieving data.js from ' + METEOR_API_URL + ': ' + error);
             return;
         }
         writeFileToDisk(SAVED_METEOR_API_FILE_PATH, body);
-        populateModuleAndGlobalClassNames(body);
-        var meteorDefsContent = parseClientMeteorApi(body);
-        writeFileToDisk(DEF_DIR + METEOR_DEF_FILENAME, meteorDefsContent);
+
+        _.each(METEOR_LOCUS_CONFIGS, function (config) {
+            currentLocusID = config.locusID;
+            populateModuleAndGlobalClassNames(body);
+            var meteorDefsContent = parseClientMeteorApi(body);
+            if (currentLocusID === 'None') {
+                meteorDefsContent =
+                    getFileContents(METEOR_HEADER_FILE)
+                    + getFileContents(METEOR_LOCUS_CONFIGS.common.manualDefsFile)
+                    + getFileContents(METEOR_LOCUS_CONFIGS.client.manualDefsFile)
+                    + getFileContents(METEOR_LOCUS_CONFIGS.server.manualDefsFile)
+                    + getFileContents(METEOR_LOCUS_CONFIGS.package.manualDefsFile)
+                    + meteorDefsContent;
+            } else {
+                meteorDefsContent = getFileContents(METEOR_HEADER_FILE) + getFileContents(config.manualDefsFile) + meteorDefsContent;
+            }
+            writeFileToDisk(DEF_DIR + config.fileName, meteorDefsContent);
+        });
     });
 };
 
-createMeteorDefFile();
+createMeteorDefFiles();
 //createTypeScriptLibFile();  Not currently working -- not sure how to generated latest typescript lib.d.ts file
 getThirdPartyDefLibs();
 getThirdPartyDefTests();

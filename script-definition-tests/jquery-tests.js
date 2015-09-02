@@ -109,6 +109,11 @@ function test_ajax() {
         alert("Data Saved: " + msg);
     });
     $.ajax({
+        method: "POST",
+        url: "some.php",
+        data: { name: "John", location: "Boston" }
+    });
+    $.ajax({
         url: "test.html",
         cache: false
     }).done(function (html) {

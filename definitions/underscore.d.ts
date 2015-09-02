@@ -1237,6 +1237,20 @@ interface UnderscoreStatic {
 		...sources: any[]): any;
 
 	/**
+	* Like extend, but only copies own properties over to the destination object. (alias: assign)
+	*/
+	extendOwn(
+		destination: any,
+		...source: any[]): any;
+		
+	/**
+	* Like extend, but only copies own properties over to the destination object. (alias: extendOwn)
+	*/
+	assign(
+		destination: any,
+		...source: any[]): any;
+
+	/**
 	* Return a copy of the object, filtered to only have values for the whitelisted keys
 	* (or array of valid keys).
 	* @param object Object to strip unwanted key/value pairs.
@@ -2212,8 +2226,8 @@ interface Underscore<T> {
 	* Wrapped type `object`.
 	* @see _.pick
 	**/
-	pick(...keys: string[]): any;
-	pick(keys: string[]): any;
+	pick(...keys: any[]): any;
+	pick(keys: any[]): any;
 	pick(fn: (value: any, key: any, object: any) => any): any;
 
 	/**
@@ -2833,7 +2847,7 @@ interface _Chain<T> {
 	* Wrapped type `any[]`.
 	* @see _.partition
 	**/
-	partition(iterator: _.ListIterator<T, boolean>, context?: any): _Chain<T[][]>;
+	partition(iterator: _.ListIterator<T, boolean>, context?: any): _Chain<T[]>;
 
 	/**
 	* Wrapped type `any[][]`.
@@ -3069,7 +3083,8 @@ interface _Chain<T> {
 	* Wrapped type `object`.
 	* @see _.pick
 	**/
-	pick(...keys: string[]): _Chain<T>;
+	pick(...keys: any[]): _Chain<T>;
+	pick(keys: any[]): _Chain<T>;
 	pick(fn: (value: any, key: any, object: any) => any): _Chain<T>;
 
 	/**

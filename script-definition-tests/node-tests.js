@@ -1,5 +1,5 @@
 /// <reference path="../definitions/node.d.ts" />
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -16,6 +16,7 @@ var http = require("http");
 var net = require("net");
 var dgram = require("dgram");
 var querystring = require('querystring');
+var readline = require('readline');
 assert(1 + 1 - 2 === 0, "The universe isn't how it should.");
 assert.deepEqual({ x: { y: 3 } }, { x: { y: 3 } }, "DEEP WENT DERP");
 assert.equal(3, "3", "uses == comparator");
@@ -117,3 +118,16 @@ console.log(escaped);
 var unescaped = querystring.unescape(escaped);
 console.log(unescaped);
 // http://example.com/product/abcde.html
+////////////////////////////////////////////////////
+///ReadLine tests : https://nodejs.org/docs/v0.11.0/api/readline.html
+////////////////////////////////////////////////////
+var rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+rl.setPrompt("$>");
+rl.prompt();
+rl.prompt(true);
+rl.question("do you like typescript?", function (answer) {
+    rl.close();
+});
