@@ -1,14 +1,13 @@
 /**
- *
  *  Meteor definitions for TypeScript
  *  author - Olivier Refalo - orefalo@yahoo.com
  *  author - David Allen - dave@fullflavedave.com
  *
  *  Thanks to Sam Hatoum for the base code for auto-generating this file.
  *
- *  supports Meteor 1.1.0.2
- *
+ *  supports Meteor 1.1.0.3
  */
+
 
 /**
  * These are the modules and interfaces that can't be automatically generated from the Meteor data.js file
@@ -35,6 +34,104 @@ declare module Match {
     function OneOf(...patterns: any[]): any;
     function Where(condition: any): any;
 }
+
+declare module Meteor {
+    interface UserEmail {
+        address:string;
+        verified:boolean;
+    }
+
+    interface User {
+        _id?:string;
+        username?:string;
+        emails?:Meteor.UserEmail[];
+        createdAt?: number;
+        profile?: any;
+        services?: any;
+    }
+
+    enum StatusEnum {
+        connected,
+        connecting,
+        failed,
+        waiting,
+        offline
+    }
+
+    interface LiveQueryHandle {
+        stop(): void;
+    }
+}
+
+declare module DDP {
+    interface DDPStatic {
+        subscribe(name: string, ...rest: any[]);
+        call(method: string, ...parameters: any[]):void;
+        apply(method: string, ...parameters: any[]):void;
+        methods(IMeteorMethodsDictionary: any): any;
+        status():DDPStatus;
+        reconnect(): void;
+        disconnect(): void;
+        onReconnect(): void;
+    }
+
+    interface DDPStatus {
+        connected: boolean;
+        status: Meteor.StatusEnum;
+        retryCount: number;
+        //To turn this into an interval until the next reconnection, use retryTime - (new Date()).getTime()
+        retryTime?: number;
+        reason?: string;
+    }
+}
+
+declare module Mongo {
+    interface Selector extends Object {}
+    interface Modifier {}
+    interface SortSpecifier {}
+    interface FieldSpecifier {
+        [id: string]: Number;
+    }
+}
+
+declare module HTTP {
+
+    interface HTTPRequest {
+        content?:string;
+        data?:any;
+        query?:string;
+        params?:{[id:string]:string};
+        auth?:string;
+        headers?:{[id:string]:string};
+        timeout?:number;
+        followRedirects?:boolean;
+    }
+
+    interface HTTPResponse {
+        statusCode?:number;
+        headers?:{[id:string]: string};
+        content?:string;
+        data?:any;
+    }
+
+    function call(method: string, url: string, options?: HTTP.HTTPRequest, asyncCallback?:Function):HTTP.HTTPResponse;
+    function del(url: string, callOptions?: HTTP.HTTPRequest, asyncCallback?: Function): HTTP.HTTPResponse;
+    function get(url: string, callOptions?: HTTP.HTTPRequest, asyncCallback?: Function): HTTP.HTTPResponse;
+    function post(url: string, callOptions?: HTTP.HTTPRequest, asyncCallback?: Function): HTTP.HTTPResponse;
+    function put(url: string, callOptions?: HTTP.HTTPRequest, asyncCallback?: Function): HTTP.HTTPResponse;
+}
+
+declare module Random {
+    function id(numberOfChars?: number): string;
+    function secret(numberOfChars?: number): string;
+    function fraction():number;
+    function hexString(numberOfDigits:number):string; // @param numberOfDigits, @returns a random hex string of the given length
+    function choice(array:any[]):string; // @param array, @return a random element in array
+    function choice(str:string):string; // @param str, @return a random char in str
+}
+/**
+ * These are the modules and interfaces that can't be automatically generated from the Meteor data.js file
+ */
 
 declare module Meteor {
     /** Start definitions for Template **/
@@ -76,155 +173,10 @@ declare module Meteor {
     function loginWithTwitter(options?: Meteor.LoginWithExternalServiceOptions, callback?: Function): void;
     function loginWithWeibo(options?: Meteor.LoginWithExternalServiceOptions, callback?: Function): void;
 
-    interface UserEmail {
-        address:string;
-        verified:boolean;
-    }
-
-    interface User {
-        _id?:string;
-        username?:string;
-        emails?:Meteor.UserEmail[];
-        createdAt?: number;
-        profile?: any;
-        services?: any;
-    }
-
     interface SubscriptionHandle {
         stop(): void;
         ready(): boolean;
     }
-
-    interface Tinytest {
-        add(name:string, func:Function): any;
-        addAsync(name:string, func:Function): any;
-    }
-
-    enum StatusEnum {
-        connected,
-        connecting,
-        failed,
-        waiting,
-        offline
-    }
-
-    interface LiveQueryHandle {
-        stop(): void;
-    }
-
-    interface EmailFields {
-        subject?: Function;
-        text?: Function;
-    }
-
-    interface EmailTemplates {
-        from: string;
-        siteName: string;
-        resetPassword: Meteor.EmailFields;
-        enrollAccount:  Meteor.EmailFields;
-        verifyEmail:  Meteor.EmailFields;
-    }
-
-    interface Connection {
-        id: string;
-        close: Function;
-        onClose: Function;
-        clientAddress: string;
-        httpHeaders: Object;
-    }
-}
-
-declare module Mongo {
-    interface Selector extends Object {}
-    interface Modifier {}
-    interface SortSpecifier {}
-    interface FieldSpecifier {
-        [id: string]: Number;
-    }
-    enum IdGenerationEnum {
-        STRING,
-        MONGO
-    }
-    interface AllowDenyOptions {
-        insert?: (userId: string, doc: any) => boolean;
-        update?: (userId: string, doc: any, fieldNames: string[], modifier: any) => boolean;
-        remove?: (userId: string, doc: any) => boolean;
-        fetch?: string[];
-        transform?: Function;
-    }
-}
-
-declare module HTTP {
-
-	interface HTTPRequest {
-		content?:string;
-		data?:any;
-		query?:string;
-		params?:{[id:string]:string};
-		auth?:string;
-		headers?:{[id:string]:string};
-		timeout?:number;
-		followRedirects?:boolean;
-	}
-
-	interface HTTPResponse {
-		statusCode?:number;
-		headers?:{[id:string]: string};
-		content?:string;
-		data?:any;
-	}
-
-    function call(method: string, url: string, options?: HTTP.HTTPRequest, asyncCallback?:Function):HTTP.HTTPResponse;
-    function del(url: string, callOptions?: HTTP.HTTPRequest, asyncCallback?: Function): HTTP.HTTPResponse;
-    function get(url: string, callOptions?: HTTP.HTTPRequest, asyncCallback?: Function): HTTP.HTTPResponse;
-    function post(url: string, callOptions?: HTTP.HTTPRequest, asyncCallback?: Function): HTTP.HTTPResponse;
-    function put(url: string, callOptions?: HTTP.HTTPRequest, asyncCallback?: Function): HTTP.HTTPResponse;
-
-}
-
-declare module Email {
-    interface EmailMessage {
-        from: string;
-        to: string | string[];
-        cc?: string | string[];
-        bcc?: string | string[];
-        replyTo?: string | string[];
-        subject: string;
-        text?: string;
-        html?: string;
-        headers?: {[id: string]: string};
-    }
-}
-
-declare module DDP {
-    interface DDPStatic {
-        subscribe(name: string, ...rest: any[]);
-        call(method: string, ...parameters: any[]):void;
-        apply(method: string, ...parameters: any[]):void;
-        methods(IMeteorMethodsDictionary: any): any;
-        status():DDPStatus;
-        reconnect(): void;
-        disconnect(): void;
-        onReconnect(): void;
-    }
-
-    interface DDPStatus {
-        connected: boolean;
-        status: Meteor.StatusEnum;
-        retryCount: number;
-        //To turn this into an interval until the next reconnection, use retryTime - (new Date()).getTime()
-        retryTime?: number;
-        reason?: string;
-    }
-}
-
-declare module Random {
-    function id(numberOfChars?: number): string;
-    function secret(numberOfChars?: number): string;
-    function fraction():number;
-    function hexString(numberOfDigits:number):string; // @param numberOfDigits, @returns a random hex string of the given length
-    function choice(array:any[]):string; // @param array, @return a random element in array
-    function choice(str:string):string; // @param str, @return a random char in str
 }
 
 declare module Blaze {
@@ -287,13 +239,43 @@ declare module BrowserPolicy {
     }
 }
 
-declare module Tracker {
-    export var ComputationFunction: (computation: Tracker.Computation) => void;
 
+/**
+ * These are the modules and interfaces that can't be automatically generated from the Meteor data.js file
+ */
+
+declare module Meteor {
+    interface EmailFields {
+        subject?: Function;
+        text?: Function;
+    }
+
+    interface EmailTemplates {
+        from: string;
+        siteName: string;
+        resetPassword: Meteor.EmailFields;
+        enrollAccount:  Meteor.EmailFields;
+        verifyEmail:  Meteor.EmailFields;
+    }
+
+    interface Connection {
+        id: string;
+        close: Function;
+        onClose: Function;
+        clientAddress: string;
+        httpHeaders: Object;
+    }
 }
 
-declare var IterationCallback: <T>(doc: T, index: number, cursor: Mongo.Cursor<T>) => void;
-
+declare module Mongo {
+    interface AllowDenyOptions {
+        insert?: (userId: string, doc: any) => boolean;
+        update?: (userId: string, doc: any, fieldNames: string[], modifier: any) => boolean;
+        remove?: (userId: string, doc: any) => boolean;
+        fetch?: string[];
+        transform?: Function;
+    }
+}
 
 interface MailComposerOptions {
     escapeSMTP: boolean;
@@ -313,10 +295,16 @@ interface MailComposer {
     streamMessage();
     pipe(stream: any /** fs.WriteStream **/);
 }
-
 /**
- * These modules and interfaces are automatically generated from the Meteor api.js file
+ * These are the modules and interfaces that can't be automatically generated from the Meteor data.js file
  */
+
+declare module Meteor {
+    interface Tinytest {
+        add(name:string, func:Function): any;
+        addAsync(name:string, func:Function): any;
+    }
+}
 declare module Accounts {
 	function changePassword(oldPassword: string, newPassword: string, callback?: Function): void;
 	function createUser(options: {
@@ -628,7 +616,7 @@ declare module Mongo {
 		count(): number;
 		fetch(): Array<T>;
 		forEach(callback: <T>(doc: T, index: number, cursor: Mongo.Cursor<T>) => void, thisArg?: any): void;
-		map(callback: <T>(doc: T, index: number, cursor: Mongo.Cursor<T>) => void, thisArg?: any): Array<T>;
+		map<U>(callback: (doc: T, index: number, cursor: Mongo.Cursor<T>) => U, thisArg?: any): Array<U>;
 		observe(callbacks: Object): Meteor.LiveQueryHandle;
 		observeChanges(callbacks: Object): Meteor.LiveQueryHandle;
 	}

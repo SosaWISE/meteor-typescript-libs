@@ -20,17 +20,27 @@ var vm = require('vm'),
     TINYTEST_TEST_DIR = './tinytest-definition-tests/',
     TINYTEST_DEF_BASE_PATH = '../../meteortypescript_typescript-libs/',
     METEOR_API_URL = 'https://raw.githubusercontent.com/meteor/meteor/devel/docs/client/data.js',
-    SAVED_METEOR_API_FILE_PATH = './lib/data.js';
-MANUALLY_MAINTAINED_DEFS_FILE = './lib/meteor-manually-maintained-definitions.d.ts',
-    METEOR_DEF_FILENAME = 'meteor.d.ts',
+    SAVED_METEOR_API_FILE_PATH = './lib/data.js',
+    METEOR_HEADER_FILE = './lib/meteor-definitions-header.d.ts',
+//METEOR_DEF_FILENAME = 'meteor.d.ts',
     DEBUG = true,
     definitionFilenames = [], // References to these files will be written to the master definition file
     testFilenames = ['meteor-tests.ts'],
     moduleNames = [],
-    globalClassNames = [];
-globalFunctionNames = [];
+    globalClassNames = [],
+    globalFunctionNames = [],
+    currentLocusID = null;
 // Global var DocsData created in function runApiFileInThisContext()
 
+
+var METEOR_LOCUS_CONFIGS = {
+    none: {locusID: 'None', fileName: 'meteor.d.ts'},
+    common: {locusID: 'Anywhere', manualDefsFile: './lib/meteor-common-manually-maintained-definitions.d.ts', fileName: 'meteor.common.d.ts'},
+    client: {locusID: 'Client', manualDefsFile: './lib/meteor-client-manually-maintained-definitions.d.ts', fileName: 'meteor.client.d.ts'},
+    server: {locusID: 'Server', manualDefsFile: './lib/meteor-server-manually-maintained-definitions.d.ts', fileName: 'meteor.server.d.ts'},
+    package: {locusID: 'package.js', manualDefsFile: './lib/meteor-package-manually-maintained-definitions.d.ts', fileName: 'meteor.package.d.ts'},
+    plugin: {locusID: 'Build Plugin', fileName: 'meteor.build.d.ts'}
+};
 
 // Not currently called -- not sure how to automatically generate latest lib.d.ts
 var typescriptCoreLibs = [
@@ -137,7 +147,8 @@ var signatureElementMappings = {
     'insert\\?: \\(userId:string, doc\\)': 'insert?: (userId: string, doc: T)',
     'update\\?: \\(userId, doc, fieldNames, modifier\\)': 'update?: (userId: string, doc: T, fieldNames: string[], modifier: any)',
     'remove\\?: \\(userId, doc\\)': 'remove?: (userId: string, doc: T)',
-    'exportOptions\\.testOnly:': 'testOnly?:'
+    'exportOptions\\.testOnly:': 'testOnly?:',
+    'map\\(callback: <T>\\(doc: T, index: number, cursor: Mongo.Cursor<T>\\) => void':  'map<U>(callback: (doc: T, index: number, cursor: Mongo.Cursor<T>) => U'
 };
 
 var propertyAndReturnTypeMappings = {
@@ -183,7 +194,7 @@ var propertyAndReturnTypeMappings = {
     'Mongo.Cursor#count': 'number',
     'Mongo.Cursor#fetch': 'Array<T>',
     'Mongo.Cursor#forEach': 'void',
-    'Mongo.Cursor#map': 'Array<Any>',
+    'Mongo.Cursor#map': 'Array<U>',
     'Mongo.Cursor#observe': 'Meteor.LiveQueryHandle',
     'Mongo.Cursor#observeChanges': 'Meteor.LiveQueryHandle',
     'Plugin.registerSourceHandler': 'void',
@@ -348,8 +359,12 @@ var propertyAndReturnTypeMappings = {
 
     'check': 'void',
 
-    'DDPCommon.MethodInvocation': 'any'
+    'DDPCommon.MethodInvocation': 'any',
 
+    'Plugin.registerCompiler': 'void',
+    'Plugin.registerLinter': 'void',
+    'Plugin.registerMinifier': 'void',
+    'Plugin.registerSourceHandler': 'void'
 };
 
 var getThirdPartyDefLibs = function () {
@@ -444,10 +459,12 @@ var writeFileToDisk = function (path, content) {
     });
 };
 
-var addManuallyMaintainedDefs = function () {
-    var interfaces = fs.readFileSync(MANUALLY_MAINTAINED_DEFS_FILE);
-    interfaces += '\n';
-    return interfaces;
+var getFileContents = function getFileContents(filePath) {
+    if (!filePath) return '';
+
+    var contents = fs.readFileSync(filePath);
+    contents += '\n';
+    return contents;
 };
 
 // Creates global var DocsData with contents of meteorClientApiFile
@@ -530,7 +547,7 @@ var createDecomposedClass = function (apiDef, tabs) {
     classContent += replaceSignatureElements(constructorSignature);
 
     // Exception case for Template
-    if (apiDef.name === 'Template') {
+    if (apiDef.name === 'Template' && (currentLocusID === 'Client' || currentLocusID === 'None')) {
         classContent +=
             tabs + '\t// It should be [templateName: string]: TemplateInstance but this is not possible -- user will need to cast to TemplateInstance\n' +
             tabs + '\t[templateName: string]: any | Template; // added "any" to make it work\n' +
@@ -544,13 +561,13 @@ var createDecomposedClass = function (apiDef, tabs) {
     classContent += tabs + '}\n';
 
     // Exception case for Meteor.Error since it is improperly defined in official JSON.
-    if (apiDef.longname === 'Meteor.Error') {
+    if (apiDef.longname === 'Meteor.Error' && (currentLocusID === 'Anywhere' || currentLocusID === 'None')) {
         classContent +=
             tabs + 'interface Error {\n' +
             tabs + '\terror: string;\n' +
             tabs + '\treason?: string;\n' +
             tabs + '\tdetails?: string;\n' +
-            tabs + '}\n'
+            tabs + '}\n';
         return classContent;
     }
 
@@ -575,7 +592,25 @@ var createVar = function createVar(apiDef, tabs, isInInterface) {
     return signature;
 };
 
+//var UNSPECIFIED_LOCUS_LONG_NAMES = [
+//    { 'EJSON.CustomType': ['Anywhere', 'Client', 'Server'] }
+//];
+
+var includeInCurrentLocus = function includeInCurrentLocus(apiDef) {
+    if (currentLocusID === 'None') return true;
+    if (!apiDef.locus) return true;
+    if (apiDef.locus === currentLocusID) return true;
+    return false;
+    //if (UNSPECIFIED_LOCUS_LONG_NAMES[apiDef.longname] && UNSPECIFIED_LOCUS_LONG_NAMES[apiDef.longname].indexOf(apiDef.currentLocusID) > -1) {
+    //    return true;
+    //} else {
+    //    return false;
+    //}
+};
+
 var createFunction = function createFunction(apiDef, tabs, isInInterface) {
+    if (!includeInCurrentLocus) return;
+
     var signature = tabs || '';
 
     if (!isInInterface) signature += 'function ';
@@ -583,6 +618,7 @@ var createFunction = function createFunction(apiDef, tabs, isInInterface) {
     signature += addGenerics(apiDef.longname);
     signature += createArgs(apiDef);
     signature += addPropertyOrReturnTypeAndComplete(apiDef.longname, apiDef.returns);
+    if (apiDef.longname === 'Mongo.Cursor#map') console.log('Mongo.Cursor#map, sig = ' + signature);
     signature = replaceSignatureElements(signature);    // This is the nuclear option: replace anything missed earlier
     signature += '\n';
 
@@ -595,17 +631,17 @@ var createModuleInnerContent = function (moduleOrInterfaceName, tabs, isInterfac
     tabs = tabs || '';
     var content = '';
     _.forIn(DocsData, function (apiDef) {  // Global var DocsData created in function runApiFileInThisContext()
+        if (!includeInCurrentLocus(apiDef)) return;
+
         if (apiDef.memberof === moduleOrInterfaceName) {
             if (apiDef.longname === 'Template.dynamic') return;  // Special case since it's just for use in templates
             if (scope && apiDef.scope !== scope) return;
             //if (apiDef) console.log('apiDef.longname = ' + apiDef.longname + 'apiDef.scope = ' + apiDef.scope);
 
             // Exception case for errors in data.js definitions file
-             if (moduleOrInterfaceName === 'Accounts'
+            if (moduleOrInterfaceName === 'Accounts'
                 && ['Accounts.onResetPasswordLink', 'Accounts.onEnrollmentLink', 'Accounts.onEmailVerificationLink'].indexOf(apiDef.longname) > -1) {
-                console.log('old name = ' + apiDef.name);
                 apiDef.name = apiDef.name.replace(/\.(.+)/, '$1');
-                console.log('new name = ' + apiDef.name);
                 content += createFunction(apiDef, '\t' + tabs, isInterface);
                 return;
             }
@@ -637,6 +673,7 @@ var createModuleInnerContent = function (moduleOrInterfaceName, tabs, isInterfac
 var createGlobalFunctions = function createGlobalFunctions() {
     var allFunctionsContent = '';
     _.each(globalFunctionNames, function (functionName) {
+        if (!includeInCurrentLocus(DocsData[functionName])) return;
         allFunctionsContent += 'declare ' + createFunction(DocsData[functionName], ''); // Global var DocsData created in function runApiFileInThisContext()
     });
     return allFunctionsContent;
@@ -658,8 +695,7 @@ var createModules = function () {
         moduleContent += 'declare module ' + moduleName + ' {\n';
         moduleContent += createModuleInnerContent(moduleName);
         if (moduleName === 'Accounts') {
-            _.each(accountsClassesInModules, function(className) {
-                console.log('***** creating inner content for ' + className);
+            _.each(accountsClassesInModules, function (className) {
                 moduleContent += createModuleInnerContent(className);
             });
         }
@@ -672,7 +708,7 @@ var createModules = function () {
 var parseClientMeteorApi = function (meteorClientApiFile) {
     runApiFileInThisContext(meteorClientApiFile); // Makes var DocsData in meterClientApiFile accessible as a global var
     var stubFileContent = '';
-    stubFileContent += addManuallyMaintainedDefs();
+    //stubFileContent += addManuallyMaintainedDefs();
     stubFileContent += createModules();
     stubFileContent += createGlobalClasses();
     stubFileContent += createGlobalFunctions();
@@ -680,8 +716,14 @@ var parseClientMeteorApi = function (meteorClientApiFile) {
 };
 
 var populateModuleAndGlobalClassNames = function (meteorClientApiFile) {
+    moduleNames = [];
+    globalClassNames = [];
+    globalFunctionNames = [];
+
     runApiFileInThisContext(meteorClientApiFile);
     _.forIn(DocsData, function (value, key) {  // Global var DocsData created in function runApiFileInThisContext()
+        //if (value.locus !== currentLocusID) return;
+
         if (value.kind === 'namespace' && !value.memberof) {
             moduleNames.push(key);
         }
@@ -696,28 +738,47 @@ var populateModuleAndGlobalClassNames = function (meteorClientApiFile) {
     moduleNames.push('Session'); // TODO: fix exception
     moduleNames.push('HTTP'); // TODO: fix exception
     moduleNames.push('Email'); // TODO: fix exception
-    moduleNames = _.filter(moduleNames, function (modName) {
-        return modName !== 'Plugin';
-    });
-    console.log('Global Modules: ' + JSON.stringify(moduleNames));
-    console.log('Global Classes: ' + JSON.stringify(globalClassNames));
+    if (currentLocusID === 'None') {
+        moduleNames = _.filter(moduleNames, function (modName) {
+            return modName !== 'Plugin';
+        });
+    }
+    console.log('Locus: ' + currentLocusID + ', Global Modules: ' + JSON.stringify(moduleNames));
+    console.log('Locus: ' + currentLocusID + ', Global Classes: ' + JSON.stringify(globalClassNames));
 
 };
 
-var createMeteorDefFile = function () {
+
+
+var createMeteorDefFiles = function createMeteorDefFiles() {
     require('request')(METEOR_API_URL, function (error, response, body) {
         if (error || body.length < 10) {
             console.log('Error retrieving data.js from ' + METEOR_API_URL + ': ' + error);
             return;
         }
         writeFileToDisk(SAVED_METEOR_API_FILE_PATH, body);
-        populateModuleAndGlobalClassNames(body);
-        var meteorDefsContent = parseClientMeteorApi(body);
-        writeFileToDisk(DEF_DIR + METEOR_DEF_FILENAME, meteorDefsContent);
+
+        _.each(METEOR_LOCUS_CONFIGS, function (config) {
+            currentLocusID = config.locusID;
+            populateModuleAndGlobalClassNames(body);
+            var meteorDefsContent = parseClientMeteorApi(body);
+            if (currentLocusID === 'None') {
+                meteorDefsContent =
+                    getFileContents(METEOR_HEADER_FILE)
+                    + getFileContents(METEOR_LOCUS_CONFIGS.common.manualDefsFile)
+                    + getFileContents(METEOR_LOCUS_CONFIGS.client.manualDefsFile)
+                    + getFileContents(METEOR_LOCUS_CONFIGS.server.manualDefsFile)
+                    + getFileContents(METEOR_LOCUS_CONFIGS.package.manualDefsFile)
+                    + meteorDefsContent;
+            } else {
+                meteorDefsContent = getFileContents(METEOR_HEADER_FILE) + getFileContents(config.manualDefsFile) + meteorDefsContent;
+            }
+            writeFileToDisk(DEF_DIR + config.fileName, meteorDefsContent);
+        });
     });
 };
 
-createMeteorDefFile();
+createMeteorDefFiles();
 //createTypeScriptLibFile();  Not currently working -- not sure how to generated latest typescript lib.d.ts file
 getThirdPartyDefLibs();
 getThirdPartyDefTests();
