@@ -133,7 +133,9 @@ declare module Meteor {
 }
 
 declare module Mongo {
-    interface Selector extends Object {}
+    interface Selector {
+      [key: string]:any;
+    } 
     interface Modifier {}
     interface SortSpecifier {}
     interface FieldSpecifier {
