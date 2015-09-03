@@ -28,3 +28,10 @@ declare module Meteor {
 
 	}
 }
+
+declare module Mongo {
+	enum IdGenerationEnum {
+		STRING,
+		MONGO
+	}
+}
