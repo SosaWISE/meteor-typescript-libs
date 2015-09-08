@@ -6,9 +6,15 @@ var testFilenames=fs.readdirSync("./tinytest-definition-tests");
 
 var testsWithModuleFlag = ['handlebars-tests.ts', 'node-tests.ts', 'node-fibers-tests.ts'];
 
+var isTypeScriptFile = function isTypeScriptFile(filename) {
+    return filename.indexOf('.ts') > -1;
+};
 
 _.each(testFilenames, function(filename) {
 	console.log('Running transpilation test: ' + filename);
+
+    if (!isTypeScriptFile(filename)) return;
+
 	//var sys = require('sys');
 	var exec = require('child_process').exec;
 

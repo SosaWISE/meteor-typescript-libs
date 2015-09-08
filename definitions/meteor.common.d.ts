@@ -129,6 +129,7 @@ declare module Random {
     function choice(array:any[]):string; // @param array, @return a random element in array
     function choice(str:string):string; // @param str, @return a random char in str
 }
+
 declare module Accounts {
 	function createUser(options: {
 				username?: string;
