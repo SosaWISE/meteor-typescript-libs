@@ -1,5 +1,5 @@
 /**
- * These are the modules and interfaces that can't be automatically generated from the Meteor data.js file
+ * These are the server modules and interfaces that can't be automatically generated from the Meteor data.js file
  */
 
 declare module Meteor {

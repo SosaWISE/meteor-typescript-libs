@@ -10,7 +10,7 @@
 
 
 /**
- * These are the modules and interfaces that can't be automatically generated from the Meteor data.js file
+ * These are the common (for client and server) modules and interfaces that can't be automatically generated from the Meteor data.js file
  */
 
 interface EJSONable {
@@ -131,7 +131,7 @@ declare module Random {
 }
 
 /**
- * These are the modules and interfaces that can't be automatically generated from the Meteor data.js file
+ * These are the client modules and interfaces that can't be automatically generated from the Meteor data.js file
  */
 
 declare module Meteor {
@@ -242,7 +242,7 @@ declare module BrowserPolicy {
 
 
 /**
- * These are the modules and interfaces that can't be automatically generated from the Meteor data.js file
+ * These are the server modules and interfaces that can't be automatically generated from the Meteor data.js file
  */
 
 declare module Meteor {
@@ -297,7 +297,7 @@ interface MailComposer {
     pipe(stream: any /** fs.WriteStream **/);
 }
 /**
- * These are the modules and interfaces that can't be automatically generated from the Meteor data.js file
+ * These are the modules and interfaces for packages that can't be automatically generated from the Meteor data.js file
  */
 
 interface ILengthAble {
