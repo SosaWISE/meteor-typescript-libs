@@ -86,6 +86,9 @@ declare module DDP {
 }
 
 declare module Mongo {
+	interface Selector {
+		[key: string]:any;
+	}
     interface Selector extends Object {}
     interface Modifier {}
     interface SortSpecifier {}
