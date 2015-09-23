@@ -7,7 +7,7 @@ Package.describe({
 
 Package.onUse(function (api, where) {
     api.versionsFrom('1.1.0.3');
-    api.addFiles([
+    api.addAssets([
         'definitions/all-definitions.d.ts',
         'definitions/meteor.d.ts',
         'definitions/backbone.d.ts',
@@ -38,7 +38,7 @@ Package.onTest(function(api) {
     api.use(['tinytest', 'test-helpers', 'underscore'], ['server']);
     api.addFiles('scripts/typescript-libs-tests.js', ['server']);
 
-    api.addFiles([
+    api.addAssets([
         'definitions/all-definitions.d.ts',
         'definitions/meteor.d.ts',
         'definitions/backbone.d.ts',
