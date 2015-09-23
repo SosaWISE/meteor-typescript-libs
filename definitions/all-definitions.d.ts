@@ -14,7 +14,6 @@
 /// <reference path="paginated-subscription.d.ts" />
 /// <reference path="roles.d.ts" />
 /// <reference path="smart-collections.d.ts" />
-/// <reference path="google-maps-smart-package.d.ts" />
 
 /**
  * These are references to third party definitions files that are maintained by the TypeScript community
