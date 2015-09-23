@@ -22,7 +22,6 @@ Package.onUse(function (api, where) {
         'definitions/ironrouter.d.ts',
         'definitions/jquery.d.ts',
         'definitions/lib.d.ts',
-        'definitions/meteor.d.ts',
         'definitions/node-fibers.d.ts',
         'definitions/node.d.ts',
         'definitions/observatory.d.ts',
