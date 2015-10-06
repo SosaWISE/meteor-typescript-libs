@@ -3,7 +3,7 @@
 This project adds TypeScript definition files related to Meteor.  It includes *meteor.d.ts* plus many others.  These are definitions for Meteor 1.2.0.2, and they require TypeScript 1.4 or higher (to allow Union types).  These definitions are mostly backwards compatible for any 1.* Meteor version.
 
 ## Why use TypeScript?
-[TypeScript](http://www.typescriptlang.org/) enforces a *relaxed* static typing transpiler to Javascript.
+[TypeScript](http://www.typescriptlang.org/) is a supserset of JavaScript that enforces *relaxed* static typing and compiles to plain Javascript.  It offers most of the benefits of a strongly typed language without requiring you to use strong typing.
 
 In general, TypeScript will NOT make JavaScript prettier (like CoffeeScript).  However, it can help simplify JavaScript programming for the many object oriented coders out there. TypeScript also provides transparent access to features only available in ECMAScript 6 and above.
 
@@ -34,10 +34,10 @@ For further reading about TypeScript, please refer to the [TypeScript Handbook](
    
        - *meteor.d.ts*:  all meteor core definitions
        - *meteor.common.d.ts*:  meteor core code running on both client and server
-       - *meteor.client.d.ts*:  meteor core client only code
-       - *meteor.server.d.ts*:  meteor core server only code
-       - *meteor.package.d.ts*:  meteor core package only code
-       - *meteor.build.d.ts*:  meteor core build code
+       - *meteor.client.d.ts*:  meteor core client-only code
+       - *meteor.server.d.ts*:  meteor core server-only code
+       - *meteor.package.d.ts*:  meteor core package-only code
+       - *meteor.build.d.ts*:  meteor core build-only code
        
     *meteor.d.ts* contains all of the definitions found in *meteor.common.d.ts*, *meteor.client.d.ts*, *meteor.server.d.ts*, *meteor.package.d.ts*, and *meteor.build.d.ts* 
 
@@ -149,9 +149,9 @@ The last option is to compile code from the command line. With node and the Type
 Contributions are welcome. Remember that this project is about typing meteor packages in TypeScript.
 
 * Changes to the smart package definitions can be made directly to those definition files (e.g. ironrouter.d.ts).
-* Changes to the definitions for any third party libraries (e.g. jquery.d.ts) should be made on the [DefinitelyTyped repo](https://github.com/borisyankov/DefinitelyTyped).
-* Most changes to the meteor definitions file, "meteor.d.ts", should be made by altering "scripts/generate-definition-files.js".  Often, fixing a type/signature mapping near the top is all that is necessary.  Corresponding changes should also be made to "script-definition-tests/meteor-tests.ts" and "tinytest-definition-tests/meteor-tests.ts".
-    * Some definitions in "meteor.d.ts" can be found in "lib/meteor-manually-maintained-definitions.d.ts", which contains definitions that can't be automatically generated.
+* Changes to the definitions for any third party libraries (e.g. jquery.d.ts) should be submitted as pull requests to the [DefinitelyTyped repo](https://github.com/borisyankov/DefinitelyTyped).
+* Most changes to the meteor core definition files, ("meteor.d.ts", "meteor.client.d.ts", "meteor.server.d.ts", etc), should be made by altering "scripts/generate-definition-files.js".  Often, fixing a type/signature mapping near the top is all that is necessary.  Corresponding changes should also be made to "script-definition-tests/meteor-tests.ts" and "tinytest-definition-tests/meteor-tests.ts".
+    * Some meteor core definitions can be found in manually maintained definition files ("lib/meteor-common-manually-maintained-definitions.d.ts", "lib/meteor-client-manually-maintained-definitions.d.ts", etc), which contain definitions that can't be automatically generated.
 
 *It would be great if someone developing on Windows could add to the Usage section with instructions for Windows!*
 
