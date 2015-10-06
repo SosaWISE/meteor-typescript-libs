@@ -18,7 +18,7 @@ declare module App {
 	function accessRule(domainRule: string, options?: {
 				launchExternal?: boolean;
 			}): void;
-	function configurePlugin(pluginName: string, config: Object): void;
+	function configurePlugin(id: string, config: Object): void;
 	function icons(icons: Object): void;
 	function info(options: {
 				id?: string;
@@ -30,7 +30,7 @@ declare module App {
 				 website?: string;
 			}): void;
 	function launchScreens(launchScreens: Object): void;
-	function setPreference(name: string, value: string): void;
+	function setPreference(name: string, value: string, platform?: string): void;
 }
 
 declare module Assets {
@@ -189,4 +189,18 @@ interface TemplateStatic {
 interface Template {
 }
 
+declare function execFileAsync(command: string, args?: any[], options?: {
+				cwd?: Object;
+				env?: Object;
+				stdio?: any[] | string;
+				destination?: any;
+				waitForClose?: string;
+			}): any;
+declare function execFileSync(command: string, args?: any[], options?: {
+				cwd?: Object;
+				env?: Object;
+				stdio?: any[] | string;
+				destination?: any;
+				waitForClose?: string;
+			}): String;
 declare function getExtension(): String;

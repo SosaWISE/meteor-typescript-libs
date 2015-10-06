@@ -87,8 +87,8 @@ declare module DDP {
 
 declare module Mongo {
 	interface Selector {
-		[key: string]:any;
-	}
+	    [key: string]:any;
+   	}
     interface Selector extends Object {}
     interface Modifier {}
     interface SortSpecifier {}
@@ -175,7 +175,7 @@ declare module App {
 	function accessRule(domainRule: string, options?: {
 				launchExternal?: boolean;
 			}): void;
-	function configurePlugin(pluginName: string, config: Object): void;
+	function configurePlugin(id: string, config: Object): void;
 	function icons(icons: Object): void;
 	function info(options: {
 				id?: string;
@@ -187,7 +187,7 @@ declare module App {
 				 website?: string;
 			}): void;
 	function launchScreens(launchScreens: Object): void;
-	function setPreference(name: string, value: string): void;
+	function setPreference(name: string, value: string, platform?: string): void;
 }
 
 declare module Assets {
@@ -294,7 +294,7 @@ declare module Mongo {
 			}): Collection<T>;
 	}
 	interface Collection<T> {
-		find(selector?: Mongo.Selector, options?: {
+		find(selector?: Mongo.Selector | Mongo.ObjectID | string, options?: {
 				sort?: Mongo.SortSpecifier;
 				skip?: number;
 				limit?: number;
@@ -302,7 +302,7 @@ declare module Mongo {
 				reactive?: boolean;
 				transform?: Function;
 			}): Mongo.Cursor<T>;
-		findOne(selector?: Mongo.Selector, options?: {
+		findOne(selector?: Mongo.Selector | Mongo.ObjectID | string, options?: {
 				sort?: Mongo.SortSpecifier;
 				skip?: number;
 				fields?: Mongo.FieldSpecifier;
@@ -310,12 +310,12 @@ declare module Mongo {
 				transform?: Function;
 			}): T;
 		insert(doc: T, callback?: Function): string;
-		remove(selector: Mongo.Selector, callback?: Function): void;
-		update(selector: Mongo.Selector, modifier: Mongo.Modifier, options?: {
+		remove(selector: Mongo.Selector | Mongo.ObjectID | string, callback?: Function): void;
+		update(selector: Mongo.Selector | Mongo.ObjectID | string, modifier: Mongo.Modifier, options?: {
 				multi?: boolean;
 				upsert?: boolean;
 			}, callback?: Function): number;
-		upsert(selector: Mongo.Selector, modifier: Mongo.Modifier, options?: {
+		upsert(selector: Mongo.Selector | Mongo.ObjectID | string, modifier: Mongo.Modifier, options?: {
 				multi?: boolean;
 			}, callback?: Function): {numberAffected?: number; insertedId?: string;};
 		_ensureIndex(indexName: string, options?: {[key: string]: any}): void;
@@ -336,7 +336,7 @@ declare module Mongo {
 
 	var ObjectID: ObjectIDStatic;
 	interface ObjectIDStatic {
-		new(hexString: string): ObjectID;
+		new(hexString?: string): ObjectID;
 	}
 	interface ObjectID {
 	}
@@ -452,4 +452,18 @@ interface Template {
 }
 
 declare function check(value: any, pattern: any): void;
+declare function execFileAsync(command: string, args?: any[], options?: {
+				cwd?: Object;
+				env?: Object;
+				stdio?: any[] | string;
+				destination?: any;
+				waitForClose?: string;
+			}): any;
+declare function execFileSync(command: string, args?: any[], options?: {
+				cwd?: Object;
+				env?: Object;
+				stdio?: any[] | string;
+				destination?: any;
+				waitForClose?: string;
+			}): String;
 declare function getExtension(): String;

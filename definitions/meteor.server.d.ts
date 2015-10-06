@@ -65,13 +65,18 @@ interface MailComposer {
     pipe(stream: any /** fs.WriteStream **/);
 }
 declare module Accounts {
+	function addEmail(userId: string, newEmail: string, verified?: boolean); /** TODO: add return value **/
 	var emailTemplates: Meteor.EmailTemplates;
+	function findUserByEmail(email: string): Object;
+	function findUserByUsername(username: string): Object;
+	function removeEmail(userId: string, email: string); /** TODO: add return value **/
 	function sendEnrollmentEmail(userId: string, email?: string): void;
 	function sendResetPasswordEmail(userId: string, email?: string): void;
 	function sendVerificationEmail(userId: string, email?: string): void;
 	function setPassword(userId: string, newPassword: string, options?: {
 				logout?: Object;
 			}): void;
+	function setUsername(userId: string, newUsername: string); /** TODO: add return value **/
 	var ui: {
 		};
 	function onCreateUser(func: Function); /** TODO: add return value **/
@@ -83,7 +88,7 @@ declare module App {
 	function accessRule(domainRule: string, options?: {
 				launchExternal?: boolean;
 			}): void;
-	function configurePlugin(pluginName: string, config: Object): void;
+	function configurePlugin(id: string, config: Object): void;
 	function icons(icons: Object): void;
 	function info(options: {
 				id?: string;
@@ -95,7 +100,7 @@ declare module App {
 				 website?: string;
 			}): void;
 	function launchScreens(launchScreens: Object): void;
-	function setPreference(name: string, value: string): void;
+	function setPreference(name: string, value: string, platform?: string): void;
 }
 
 declare module Assets {
@@ -269,4 +274,18 @@ interface TemplateStatic {
 interface Template {
 }
 
+declare function execFileAsync(command: string, args?: any[], options?: {
+				cwd?: Object;
+				env?: Object;
+				stdio?: any[] | string;
+				destination?: any;
+				waitForClose?: string;
+			}): any;
+declare function execFileSync(command: string, args?: any[], options?: {
+				cwd?: Object;
+				env?: Object;
+				stdio?: any[] | string;
+				destination?: any;
+				waitForClose?: string;
+			}): String;
 declare function getExtension(): String;

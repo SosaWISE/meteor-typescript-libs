@@ -102,7 +102,7 @@ var argTypeMappings = {
     'Any': 'any',
     'function:': 'func:',
     'renderFunction:': 'renderFunction?:',
-    'MongoSelector': 'Mongo.Selector',
+    'MongoSelector': 'Mongo.Selector | Mongo.ObjectID | string',
     'MongoModifier': 'Mongo.Modifier',
     'MongoSortSpecifier': 'Mongo.SortSpecifier',
     'null': 'any /** Null **/',
@@ -110,7 +110,9 @@ var argTypeMappings = {
     'Buffer': 'any /** Buffer **/',
     'IterationCallback': '<T>(doc: T, index: number, cursor: Mongo.Cursor<T>) => void',
     'Tracker.ComputationFunction': '(computation: Tracker.Computation) => void',
-    'Array.<Object>': 'Object[]'
+    'Array.<Object>': 'Object[]',
+    'Array': 'any[]',
+    'Writable': 'any'
 };
 
 // Regex mappings for full flexibility
@@ -358,6 +360,7 @@ var propertyAndReturnTypeMappings = {
     'CompileStep#rootOutputPath': 'any',
 
     'check': 'void',
+    'execFileAsync': 'any',
 
     'DDPCommon.MethodInvocation': 'any',
 

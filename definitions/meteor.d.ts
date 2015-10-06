@@ -87,8 +87,8 @@ declare module DDP {
 
 declare module Mongo {
 	interface Selector {
-		[key: string]:any;
-	}
+	    [key: string]:any;
+   	}
     interface Selector extends Object {}
     interface Modifier {}
     interface SortSpecifier {}
@@ -348,6 +348,7 @@ declare module Meteor {
 }
 
 declare module Accounts {
+	function addEmail(userId: string, newEmail: string, verified?: boolean); /** TODO: add return value **/
 	function changePassword(oldPassword: string, newPassword: string, callback?: Function): void;
 	function createUser(options: {
 				username?: string;
@@ -356,12 +357,15 @@ declare module Accounts {
 				profile?: Object;
 			}, callback?: Function): string;
 	var emailTemplates: Meteor.EmailTemplates;
+	function findUserByEmail(email: string): Object;
+	function findUserByUsername(username: string): Object;
 	function forgotPassword(options: {
 				email?: string;
 			}, callback?: Function): void;
 	function onEmailVerificationLink(callback: Function): void;
 	function onEnrollmentLink(callback: Function): void;
 	function onResetPasswordLink(callback: Function): void;
+	function removeEmail(userId: string, email: string); /** TODO: add return value **/
 	function resetPassword(token: string, newPassword: string, callback?: Function): void;
 	function sendEnrollmentEmail(userId: string, email?: string): void;
 	function sendResetPasswordEmail(userId: string, email?: string): void;
@@ -369,6 +373,7 @@ declare module Accounts {
 	function setPassword(userId: string, newPassword: string, options?: {
 				logout?: Object;
 			}): void;
+	function setUsername(userId: string, newUsername: string); /** TODO: add return value **/
 	var ui: {
 		config(options: {
 				requestPermissions?: Object;
@@ -423,7 +428,7 @@ declare module App {
 	function accessRule(domainRule: string, options?: {
 				launchExternal?: boolean;
 			}): void;
-	function configurePlugin(pluginName: string, config: Object): void;
+	function configurePlugin(id: string, config: Object): void;
 	function icons(icons: Object): void;
 	function info(options: {
 				id?: string;
@@ -435,7 +440,7 @@ declare module App {
 				 website?: string;
 			}): void;
 	function launchScreens(launchScreens: Object): void;
-	function setPreference(name: string, value: string): void;
+	function setPreference(name: string, value: string, platform?: string): void;
 }
 
 declare module Assets {
@@ -621,7 +626,7 @@ declare module Mongo {
 				fetch?: string[];
 				transform?: Function;
 			}): boolean;
-		find(selector?: Mongo.Selector, options?: {
+		find(selector?: Mongo.Selector | Mongo.ObjectID | string, options?: {
 				sort?: Mongo.SortSpecifier;
 				skip?: number;
 				limit?: number;
@@ -629,7 +634,7 @@ declare module Mongo {
 				reactive?: boolean;
 				transform?: Function;
 			}): Mongo.Cursor<T>;
-		findOne(selector?: Mongo.Selector, options?: {
+		findOne(selector?: Mongo.Selector | Mongo.ObjectID | string, options?: {
 				sort?: Mongo.SortSpecifier;
 				skip?: number;
 				fields?: Mongo.FieldSpecifier;
@@ -639,12 +644,12 @@ declare module Mongo {
 		insert(doc: T, callback?: Function): string;
 		rawCollection(); /** TODO: add return value **/
 		rawDatabase(); /** TODO: add return value **/
-		remove(selector: Mongo.Selector, callback?: Function): void;
-		update(selector: Mongo.Selector, modifier: Mongo.Modifier, options?: {
+		remove(selector: Mongo.Selector | Mongo.ObjectID | string, callback?: Function): void;
+		update(selector: Mongo.Selector | Mongo.ObjectID | string, modifier: Mongo.Modifier, options?: {
 				multi?: boolean;
 				upsert?: boolean;
 			}, callback?: Function): number;
-		upsert(selector: Mongo.Selector, modifier: Mongo.Modifier, options?: {
+		upsert(selector: Mongo.Selector | Mongo.ObjectID | string, modifier: Mongo.Modifier, options?: {
 				multi?: boolean;
 			}, callback?: Function): {numberAffected?: number; insertedId?: string;};
 		_ensureIndex(indexName: string, options?: {[key: string]: any}): void;
@@ -665,7 +670,7 @@ declare module Mongo {
 
 	var ObjectID: ObjectIDStatic;
 	interface ObjectIDStatic {
-		new(hexString: string): ObjectID;
+		new(hexString?: string): ObjectID;
 	}
 	interface ObjectID {
 	}
@@ -809,7 +814,10 @@ interface PackageAPIStatic {
 	new(): PackageAPI;
 }
 interface PackageAPI {
-	addFiles(filename: string | string[], architecture?: string | string[], fileOptions?: Object): void;
+	addAssets(filenames: string | string[], architecture: string | string[]); /** TODO: add return value **/
+	addFiles(filenames: string | string[], architecture?: string | string[], options?: {
+				bare?: boolean;
+			}): void;
 	export(exportedObjects: string | string[], architecture?: string | string[], exportOptions?: Object, testOnly?: boolean): void;
 	imply(packageNames: string | string[], architecture?: string | string[]): void;
 	use(packageNames: string | string[], architecture?: string | string[], options?: {
@@ -871,4 +879,18 @@ interface Template {
 }
 
 declare function check(value: any, pattern: any): void;
+declare function execFileAsync(command: string, args?: any[], options?: {
+				cwd?: Object;
+				env?: Object;
+				stdio?: any[] | string;
+				destination?: any;
+				waitForClose?: string;
+			}): any;
+declare function execFileSync(command: string, args?: any[], options?: {
+				cwd?: Object;
+				env?: Object;
+				stdio?: any[] | string;
+				destination?: any;
+				waitForClose?: string;
+			}): String;
 declare function getExtension(): String;
