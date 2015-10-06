@@ -1,9 +1,9 @@
 # Meteor TypeScript libraries
 
-This project adds TypeScript definition files related to Meteor.  It includes *meteor.d.ts* plus many others.  These are definitions for Meteor 1.1.0.3, and they require TypeScript 1.4 or higher (to allow Union types).  These definitions are mostly backwards compatible for any 1.* Meteor version.
+This project adds TypeScript definition files related to Meteor.  It includes *meteor.d.ts* plus many others.  These are definitions for Meteor 1.2.0.2, and they require TypeScript 1.4 or higher (to allow Union types).  These definitions are mostly backwards compatible for any 1.* Meteor version.
 
 ## Why use TypeScript?
-[TypeScript](http://www.typescriptlang.org/) enforces a *relaxed* static typing transpiler to Javascript. It is an opinionated attempt to build an elegant language on top of a crappy, yet popular platform.
+[TypeScript](http://www.typescriptlang.org/) enforces a *relaxed* static typing transpiler to Javascript.
 
 In general, TypeScript will NOT make JavaScript prettier (like CoffeeScript).  However, it can help simplify JavaScript programming for the many object oriented coders out there. TypeScript also provides transparent access to features only available in ECMAScript 6 and above.
 
@@ -65,7 +65,7 @@ With the exception of the **body** and **head** templates, Meteor's Template dot
       }
     });
 
-    Template['myTemplateName'].rendered = function ( ) { ... }
+    Template['myTemplateName'].onRendered(function ( ) { ... });
     
 
 ### Form fields
