@@ -5,7 +5,7 @@
  *
  *  Thanks to Sam Hatoum for the base code for auto-generating this file.
  *
- *  supports Meteor 1.1.0.3
+ *  supports Meteor 1.2.0.2
  */
 
 
@@ -65,7 +65,7 @@ declare module Meteor {
 
 declare module DDP {
     interface DDPStatic {
-        subscribe(name: string, ...rest: any[]);
+        subscribe(name: string, ...rest: any[]): Meteor.SubscriptionHandle;
         call(method: string, ...parameters: any[]):void;
         apply(method: string, ...parameters: any[]):void;
         methods(IMeteorMethodsDictionary: any): any;
@@ -148,9 +148,9 @@ declare module Accounts {
 				restrictCreationByEmailDomain?: string | Function;
 				loginExpirationInDays?: number;
 				oauthSecretKey?: string;
-			}); /** TODO: add return value **/
-	function onLogin(func: Function); /** TODO: add return value **/
-	function onLoginFailure(func: Function); /** TODO: add return value **/
+			}): void;
+	function onLogin(func: Function): { stop: () => void };
+	function onLoginFailure(func: Function): { stop: () => void };
 	function config(options: {
 				sendVerificationEmail?: boolean;
 				forbidClientAccountCreation?: boolean;

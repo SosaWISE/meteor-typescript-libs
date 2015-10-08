@@ -54,7 +54,7 @@ declare module Meteor {
 
 declare module DDP {
     interface DDPStatic {
-        subscribe(name: string, ...rest: any[]);
+        subscribe(name: string, ...rest: any[]): Meteor.SubscriptionHandle;
         call(method: string, ...parameters: any[]):void;
         apply(method: string, ...parameters: any[]):void;
         methods(IMeteorMethodsDictionary: any): any;

@@ -50,6 +50,6 @@ interface MailComposerStatic {
 interface MailComposer {
     addHeader(name: string, value: string): void;
     setMessageOption(from: string, to: string, body: string, html: string): void;
-    streamMessage();
-    pipe(stream: any /** fs.WriteStream **/);
+    streamMessage(): void;
+    pipe(stream: any /** fs.WriteStream **/): void;
 }

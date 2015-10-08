@@ -5,7 +5,7 @@
  *
  *  Thanks to Sam Hatoum for the base code for auto-generating this file.
  *
- *  supports Meteor 1.1.0.3
+ *  supports Meteor 1.2.0.2
  */
 
 
@@ -61,27 +61,27 @@ interface MailComposerStatic {
 interface MailComposer {
     addHeader(name: string, value: string): void;
     setMessageOption(from: string, to: string, body: string, html: string): void;
-    streamMessage();
-    pipe(stream: any /** fs.WriteStream **/);
+    streamMessage(): void;
+    pipe(stream: any /** fs.WriteStream **/): void;
 }
 declare module Accounts {
-	function addEmail(userId: string, newEmail: string, verified?: boolean); /** TODO: add return value **/
+	function addEmail(userId: string, newEmail: string, verified?: boolean): void;
 	var emailTemplates: Meteor.EmailTemplates;
 	function findUserByEmail(email: string): Object;
 	function findUserByUsername(username: string): Object;
-	function removeEmail(userId: string, email: string); /** TODO: add return value **/
+	function removeEmail(userId: string, email: string): void;
 	function sendEnrollmentEmail(userId: string, email?: string): void;
 	function sendResetPasswordEmail(userId: string, email?: string): void;
 	function sendVerificationEmail(userId: string, email?: string): void;
 	function setPassword(userId: string, newPassword: string, options?: {
 				logout?: Object;
 			}): void;
-	function setUsername(userId: string, newUsername: string); /** TODO: add return value **/
+	function setUsername(userId: string, newUsername: string): void;
 	var ui: {
 		};
-	function onCreateUser(func: Function); /** TODO: add return value **/
-	function validateLoginAttempt(func: Function); /** TODO: add return value **/
-	function validateNewUser(func: Function); /** TODO: add return value **/
+	function onCreateUser(func: Function): void;
+	function validateLoginAttempt(func: Function): { stop: () => void };
+	function validateNewUser(func: Function): boolean;
 }
 
 declare module App {

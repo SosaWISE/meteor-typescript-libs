@@ -22,8 +22,8 @@ var vm = require('vm'),
     METEOR_API_URL = 'https://raw.githubusercontent.com/meteor/meteor/devel/docs/client/data.js',
     SAVED_METEOR_API_FILE_PATH = './lib/data.js',
     METEOR_HEADER_FILE = './lib/meteor-definitions-header.d.ts',
-//METEOR_DEF_FILENAME = 'meteor.d.ts',
     DEBUG = true,
+    //isForMeteorMasterDefs = false,
     definitionFilenames = [], // References to these files will be written to the master definition file
     testFilenames = ['meteor-tests.ts'],
     moduleNames = [],
@@ -34,7 +34,7 @@ var vm = require('vm'),
 
 
 var METEOR_LOCUS_CONFIGS = {
-    none: {locusID: 'None', fileName: 'meteor.d.ts'},
+    all: {locusID: 'All', fileName: 'meteor.d.ts'},
     common: {locusID: 'Anywhere', manualDefsFile: './lib/meteor-common-manually-maintained-definitions.d.ts', fileName: 'meteor.common.d.ts'},
     client: {locusID: 'Client', manualDefsFile: './lib/meteor-client-manually-maintained-definitions.d.ts', fileName: 'meteor.client.d.ts'},
     server: {locusID: 'Server', manualDefsFile: './lib/meteor-server-manually-maintained-definitions.d.ts', fileName: 'meteor.server.d.ts'},
@@ -164,7 +164,6 @@ var propertyAndReturnTypeMappings = {
     'Meteor.release': 'string',
     'Meteor.publish': 'void',
     'Meteor.subscribe': 'Meteor.SubscriptionHandle',
-    'Blaze.TemplateInstance#subscribe': 'Meteor.SubscriptionHandle',
     'Meteor.apply': 'any',
     'Meteor.call': 'any',
     'Meteor.clearTimeout': 'void',
@@ -193,20 +192,21 @@ var propertyAndReturnTypeMappings = {
     'Mongo.Collection#remove': 'void',
     'Mongo.Collection#allow': 'boolean',
     'Mongo.Collection#deny': 'boolean',
+    'Mongo.Collection#rawCollection': 'any',
+    'Mongo.Collection#rawDatabase': 'any',
     'Mongo.Cursor#count': 'number',
     'Mongo.Cursor#fetch': 'Array<T>',
     'Mongo.Cursor#forEach': 'void',
     'Mongo.Cursor#map': 'Array<U>',
     'Mongo.Cursor#observe': 'Meteor.LiveQueryHandle',
     'Mongo.Cursor#observeChanges': 'Meteor.LiveQueryHandle',
+
     'Plugin.registerSourceHandler': 'void',
-    'Package.describe': 'void',
-    'Package.onUse': 'void',
-    'Package.onTest': 'void',
-    'Package.registerBuildPlugin': 'void',
     'Npm.depends': 'void',
     'Npm.require': 'any',
     'Cordova.depends': 'void',
+
+    'Blaze.TemplateInstance#subscribe': 'Meteor.SubscriptionHandle',
     'Blaze.TemplateInstance#$': 'any',
     'Blaze.TemplateInstance#findAll': 'Blaze.TemplateInstance[]',
     'Blaze.TemplateInstance#find': 'Blaze.TemplateInstance',
@@ -232,12 +232,12 @@ var propertyAndReturnTypeMappings = {
     'Blaze.TemplateInstance#autorun': 'Object',
 
     'Accounts.validateLoginAttempt': '{stop: Function}',
-    'Accounts.onLogin': '{stop: Function}',
-    'Accounts.onLoginFailure': '{stop: Function}',
+    'AccountsCommon#onLogin': '{ stop: () => void }',
+    'AccountsCommon#onLoginFailure': '{ stop: () => void }',
     'Accounts.onResetPasswordLink': 'void',
     'Accounts.onEmailVerificationLink': 'void',
     'Accounts.onEnrollmentLink': 'void',
-    'Accounts.config': 'void',
+    'AccountsCommon#config': 'void',
     'Accounts.validateNewUser': 'void',
     'Accounts.onCreateUser': 'void',
     'Accounts.createUser': 'string',
@@ -251,6 +251,18 @@ var propertyAndReturnTypeMappings = {
     'Accounts.sendVerificationEmail': 'void',
     'Accounts.emailTemplates': 'Meteor.EmailTemplates',
     'Accounts.ui.config': 'void',
+    'Accounts.addEmail': 'void',
+    'Accounts.removeEmail': 'void',
+    'Accounts.setUsername': 'void',
+    'AccountsCommon#user': 'Meteor.User',
+    'AccountsCommon#userId': 'string',
+    'AccountsClient#loggingIn': 'boolean',
+    'AccountsClient#logout': 'void',
+    'AccountsClient#logoutOtherClients': 'void',
+    'AccountsServer#onCreateUser': 'void',
+    'AccountsServer#validateLoginAttempt': '{ stop: () => void }',
+    'AccountsServer#validateNewUser': 'boolean',
+
 
     'EJSON.parse': 'EJSON',
     'EJSON.stringify': 'string',
@@ -300,11 +312,17 @@ var propertyAndReturnTypeMappings = {
     'Subscription#removed': 'void',
     'Subscription#ready': 'void',
 
+    'Package.describe': 'void',
+    'Package.onUse': 'void',
+    'Package.onTest': 'void',
+    'Package.registerBuildPlugin': 'void',
+
     'PackageAPI#use': 'void',
     'PackageAPI#imply': 'void',
     'PackageAPI#addFiles': 'void',
     'PackageAPI#versionsFrom': 'void',
     'PackageAPI#export': 'void',
+    'PackageAPI#addAssets': 'void',
 
     'Tracker.flush': 'void',
     'Tracker.nonreactive': 'void',
@@ -368,6 +386,19 @@ var propertyAndReturnTypeMappings = {
     'Plugin.registerLinter': 'void',
     'Plugin.registerMinifier': 'void',
     'Plugin.registerSourceHandler': 'void'
+
+};
+
+var isMakingAllDefs = function isMakingAllDefs(locusID) {
+    return locusID === METEOR_LOCUS_CONFIGS.all.locusID;
+};
+
+var isMakingClientDefs = function isMakingClientDefs(locusID) {
+    return locusID === METEOR_LOCUS_CONFIGS.client.locusID;
+};
+
+var isMakingCommonDefs = function isMakingCommonDefs(locusID) {
+    return locusID === METEOR_LOCUS_CONFIGS.common.locusID;
 };
 
 var getThirdPartyDefLibs = function () {
@@ -384,7 +415,7 @@ var getThirdPartyDefLibs = function () {
     });
 };
 
-var getThirdPartyDefTests = function () {
+var getThirdPartyDefTests = function getThirdPartyDefTests() {
     _.each(thirdPartyDefTests, function (test) {
         require('request')(test, function (error, response, body) {
             var filename = test.slice(test.lastIndexOf('/') + 1);
@@ -475,11 +506,11 @@ var runApiFileInThisContext = function (meteorClientApiFile) {
     vm.runInThisContext("DocsData = {};" + meteorClientApiFile);
 };
 
-var hasString = function (haystack, needle) {
+var hasString = function hasString(haystack, needle) {
     return haystack.indexOf(needle) !== -1;
 };
 
-var createArgTypes = function (argTypes) {
+var createArgTypes = function createArgTypes(argTypes) {
     var argTypesSection = '';
     argTypes.forEach(function (type, index) {
         type = replaceIrregularArgTypes(type);
@@ -492,7 +523,7 @@ var createArgTypes = function (argTypes) {
     return argTypesSection;
 };
 
-var createArgs = function (apiDef) {
+var createArgs = function createArgs(apiDef) {
     var argSection = '(';
     _.each(apiDef.params, function (param, index) {
         argSection += param.name;
@@ -541,7 +572,7 @@ var createSimpleClass = function createSimpleClass(apiDef, tabs) {
 // This serves two purposes:
 //     - enables ambient declaration of class
 //     - enables separation of static and instance vars and methods (for the case of Template)
-var createDecomposedClass = function (apiDef, tabs) {
+var createDecomposedClass = function createDecomposedClass(apiDef, tabs) {
     //console.log('Creating decomposed class, longName = ' + longName);
     tabs = tabs || '';
     var classContent = tabs + 'var ' + apiDef.name + ': ' + apiDef.name + 'Static;\n';
@@ -550,7 +581,7 @@ var createDecomposedClass = function (apiDef, tabs) {
     classContent += replaceSignatureElements(constructorSignature);
 
     // Exception case for Template
-    if (apiDef.name === 'Template' && (currentLocusID === 'Client' || currentLocusID === 'None')) {
+    if (apiDef.name === 'Template' && (isMakingClientDefs(currentLocusID) || isMakingAllDefs(currentLocusID))) {
         classContent +=
             tabs + '\t// It should be [templateName: string]: TemplateInstance but this is not possible -- user will need to cast to TemplateInstance\n' +
             tabs + '\t[templateName: string]: any | Template; // added "any" to make it work\n' +
@@ -564,7 +595,7 @@ var createDecomposedClass = function (apiDef, tabs) {
     classContent += tabs + '}\n';
 
     // Exception case for Meteor.Error since it is improperly defined in official JSON.
-    if (apiDef.longname === 'Meteor.Error' && (currentLocusID === 'Anywhere' || currentLocusID === 'None')) {
+    if (apiDef.longname === 'Meteor.Error' && (isMakingCommonDefs(currentLocusID) || isMakingAllDefs(currentLocusID))) {
         classContent +=
             tabs + 'interface Error {\n' +
             tabs + '\terror: string;\n' +
@@ -595,20 +626,11 @@ var createVar = function createVar(apiDef, tabs, isInInterface) {
     return signature;
 };
 
-//var UNSPECIFIED_LOCUS_LONG_NAMES = [
-//    { 'EJSON.CustomType': ['Anywhere', 'Client', 'Server'] }
-//];
-
 var includeInCurrentLocus = function includeInCurrentLocus(apiDef) {
-    if (currentLocusID === 'None') return true;
+    if (isMakingAllDefs(currentLocusID)) return true;
     if (!apiDef.locus) return true;
     if (apiDef.locus === currentLocusID) return true;
     return false;
-    //if (UNSPECIFIED_LOCUS_LONG_NAMES[apiDef.longname] && UNSPECIFIED_LOCUS_LONG_NAMES[apiDef.longname].indexOf(apiDef.currentLocusID) > -1) {
-    //    return true;
-    //} else {
-    //    return false;
-    //}
 };
 
 var createFunction = function createFunction(apiDef, tabs, isInInterface) {
@@ -626,6 +648,22 @@ var createFunction = function createFunction(apiDef, tabs, isInInterface) {
     signature += '\n';
 
     return signature;
+};
+
+var accountsPropertiesProcessed = [];
+
+var accountsPropertyIsAlreadyProcessed = function accountsPropertyIsAlreadyProcessed(moduleOrInterface, property) {
+    if (accountsClassesInModules.indexOf(moduleOrInterface) === -1) return;
+
+    if (accountsPropertiesProcessed.indexOf(property) > -1) {
+        return true;
+    } else {
+        console.log('checking module = ' + moduleOrInterface);
+        console.log('checking property = ' + property);
+        console.log('No!');
+        accountsPropertiesProcessed.push(property);
+        return false;
+    }
 };
 
 // Recursively create contents for each module
@@ -647,6 +685,9 @@ var createModuleInnerContent = function (moduleOrInterfaceName, tabs, isInterfac
                 apiDef.name = apiDef.name.replace(/\.(.+)/, '$1');
                 content += createFunction(apiDef, '\t' + tabs, isInterface);
                 return;
+            }
+            if (isMakingAllDefs(currentLocusID)) {
+                if (accountsPropertyIsAlreadyProcessed(moduleOrInterfaceName, apiDef.name)) return;
             }
             switch (apiDef.kind) {
                 case 'namespace':
@@ -691,7 +732,8 @@ var createGlobalClasses = function createGlobalClasses() {
     });
     return allClassesContent;
 };
-var createModules = function () {
+
+var createModules = function createModules() {
     var allModulesContent = '';
     _.each(moduleNames, function (moduleName) {
         var moduleContent = '';
@@ -708,7 +750,7 @@ var createModules = function () {
     return allModulesContent;
 };
 
-var parseClientMeteorApi = function (meteorClientApiFile) {
+var parseClientMeteorApi = function parseClientMeteorApi(meteorClientApiFile) {
     runApiFileInThisContext(meteorClientApiFile); // Makes var DocsData in meterClientApiFile accessible as a global var
     var stubFileContent = '';
     //stubFileContent += addManuallyMaintainedDefs();
@@ -718,7 +760,7 @@ var parseClientMeteorApi = function (meteorClientApiFile) {
     return stubFileContent;
 };
 
-var populateModuleAndGlobalClassNames = function (meteorClientApiFile) {
+var populateModuleAndGlobalClassNames = function populateModuleAndGlobalClassNames(meteorClientApiFile) {
     moduleNames = [];
     globalClassNames = [];
     globalFunctionNames = [];
@@ -741,17 +783,14 @@ var populateModuleAndGlobalClassNames = function (meteorClientApiFile) {
     moduleNames.push('Session'); // TODO: fix exception
     moduleNames.push('HTTP'); // TODO: fix exception
     moduleNames.push('Email'); // TODO: fix exception
-    if (currentLocusID === 'None') {
+    if (isMakingAllDefs(currentLocusID)) {
         moduleNames = _.filter(moduleNames, function (modName) {
             return modName !== 'Plugin';
         });
     }
     console.log('Locus: ' + currentLocusID + ', Global Modules: ' + JSON.stringify(moduleNames));
     console.log('Locus: ' + currentLocusID + ', Global Classes: ' + JSON.stringify(globalClassNames));
-
 };
-
-
 
 var createMeteorDefFiles = function createMeteorDefFiles() {
     require('request')(METEOR_API_URL, function (error, response, body) {
@@ -765,7 +804,7 @@ var createMeteorDefFiles = function createMeteorDefFiles() {
             currentLocusID = config.locusID;
             populateModuleAndGlobalClassNames(body);
             var meteorDefsContent = parseClientMeteorApi(body);
-            if (currentLocusID === 'None') {
+            if (isMakingAllDefs(currentLocusID)) {
                 meteorDefsContent =
                     getFileContents(METEOR_HEADER_FILE)
                     + getFileContents(METEOR_LOCUS_CONFIGS.common.manualDefsFile)

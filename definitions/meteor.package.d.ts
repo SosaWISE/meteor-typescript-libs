@@ -5,7 +5,7 @@
  *
  *  Thanks to Sam Hatoum for the base code for auto-generating this file.
  *
- *  supports Meteor 1.1.0.3
+ *  supports Meteor 1.2.0.2
  */
 
 
@@ -221,7 +221,7 @@ interface PackageAPIStatic {
 	new(): PackageAPI;
 }
 interface PackageAPI {
-	addAssets(filenames: string | string[], architecture: string | string[]); /** TODO: add return value **/
+	addAssets(filenames: string | string[], architecture: string | string[]): void;
 	addFiles(filenames: string | string[], architecture?: string | string[], options?: {
 				bare?: boolean;
 			}): void;

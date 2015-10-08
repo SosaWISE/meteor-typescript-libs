@@ -5,7 +5,7 @@
  *
  *  Thanks to Sam Hatoum for the base code for auto-generating this file.
  *
- *  supports Meteor 1.1.0.3
+ *  supports Meteor 1.2.0.2
  */
 
 
@@ -138,9 +138,9 @@ declare module Accounts {
 			}): void;
 	};
 	function verifyEmail(token: string, callback?: Function): void;
-	function loggingIn(); /** TODO: add return value **/
-	function logout(callback?: Function); /** TODO: add return value **/
-	function logoutOtherClients(callback?: Function); /** TODO: add return value **/
+	function loggingIn(): boolean;
+	function logout(callback?: Function): void;
+	function logoutOtherClients(callback?: Function): void;
 }
 
 declare module App {
