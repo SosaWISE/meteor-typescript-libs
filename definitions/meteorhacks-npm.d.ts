@@ -1,3 +1,8 @@
+// Definitions for the meteorhacks:npm smart package
+//
+// https://atmospherejs.com/meteorhacks/npm
+// https://github.com/meteorhacks/npm/
+
 declare module Meteor {
     export function npmRequire(moduleName: string): Function;
 }
