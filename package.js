@@ -1,7 +1,7 @@
 Package.describe({
     name: 'meteortypescript:typescript-libs',
     summary: 'Common TypeScript definition files for Meteor, including meteor.d.ts and much more.',
-    version: '1.2.6',
+    version: '1.2.7',
     git: 'https://github.com/meteor-typescript/meteor-typescript-libs'
 });
 
@@ -61,6 +61,7 @@ Package.onTest(function(api) {
         'definitions/smart-collections.d.ts',
         'definitions/underscore.d.ts',
         'definitions/underscore.string.d.ts',
+        'definitions/meteorhacks-npm.d.ts',
 
         'tinytest-definition-tests/meteor-tests.ts',
         'tinytest-definition-tests/backbone-tests.ts',
