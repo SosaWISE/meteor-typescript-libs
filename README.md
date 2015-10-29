@@ -8,8 +8,8 @@ This project adds TypeScript definition files related to Meteor.  It includes *m
 In general, TypeScript will NOT make JavaScript prettier (like CoffeeScript).  However, it can help simplify JavaScript programming for the many object oriented coders out there. TypeScript also provides transparent access to features only available in ECMAScript 6 and above.
 
 For further reading about TypeScript, please refer to the [TypeScript Handbook](http://www.typescriptlang.org/Handbook).
-
-## Usage (OSX/Linux)
+##Usage
+### Setup (OSX/Linux)
 
 1. Add a symbolic link to the definitions from within some directory within your project (e.g. ".typescript" or "lib").  The definitions can be found somewhere deep within `<project_root_dir>/.meteor/...`.  The following will probably work:
 
@@ -20,7 +20,23 @@ For further reading about TypeScript, please refer to the [TypeScript Handbook](
     <https://github.com/meteor-typescript/meteor-typescript-libs>
 
 2. Install the [Typescript compiler for Meteor](https://github.com/meteor-typescript/meteor-typescript-compiler) or an [IDE which can transpile TypeScript to JavaScript](#transpiling-typescript).
-3. From the typescript files, add references.  Reference the definition files with a single line:
+
+### Setup (Windows)
+1. Typed definitions will be present following a fresh build of meteor at the path:     `<project_root>/.meteor/local/build/programs/server/assets/packages/meteortypescript_typescript-libs/definitions`
+
+    If the definitions can't be found within the .meteor directory, you will have to manually pull down the definitions from github and add them to your project:    
+
+    *Alternatively*, you may find using [tsd](http://definitelytyped.org/tsd/) more flexible than adding typings via meteor. Typings for meteor-typescript files are availble via the command:
+
+        tsd install meteor --save
+     
+2. A symbolic link may be created for this directory via the cmd:
+
+     mklink /d .typings .meteor/local/build/programs/server/assets/packages/meteortypescript_typescript-libs/definitions
+     
+### Compiler and Referencing   
+1. Install the [Typescript compiler for Meteor](https://github.com/meteor-typescript/meteor-typescript-compiler) or an [IDE which can transpile TypeScript to JavaScript](#transpiling-typescript)
+2. From the typescript files, add references.  Reference the definition files with a single line:
 
         /// <reference path=".typescript/package_defs/all-definitions.d.ts" />  (substitute path in your project)
 
@@ -41,7 +57,8 @@ For further reading about TypeScript, please refer to the [TypeScript Handbook](
        
     *meteor.d.ts* contains all of the definitions found in *meteor.common.d.ts*, *meteor.client.d.ts*, *meteor.server.d.ts*, *meteor.package.d.ts*, and *meteor.build.d.ts* 
 
-4. Be aware of differences in coding styles when using TypeScript (see below)
+3. Be aware of differences in coding styles when using TypeScript (see below)
+
 
 
 ##  TypeScript/Meteor coding style
