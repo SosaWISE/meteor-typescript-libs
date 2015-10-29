@@ -32,7 +32,7 @@ For further reading about TypeScript, please refer to the [TypeScript Handbook](
      
 2. A symbolic link may be created for this directory via the cmd:
 
-     mklink /d .typings .meteor/local/build/programs/server/assets/packages/meteortypescript_typescript-libs/definitions
+        mklink /d .typings .meteor/local/build/programs/server/assets/packages/meteortypescript_typescript-libs/definitions
      
 ### Compiler and Referencing   
 1. Install the [Typescript compiler for Meteor](https://github.com/meteor-typescript/meteor-typescript-compiler) or an [IDE which can transpile TypeScript to JavaScript](#transpiling-typescript)
@@ -169,8 +169,6 @@ Contributions are welcome. Remember that this project is about typing meteor pac
 * Changes to the definitions for any third party libraries (e.g. jquery.d.ts) should be submitted as pull requests to the [DefinitelyTyped repo](https://github.com/borisyankov/DefinitelyTyped).
 * Most changes to the meteor core definition files, ("meteor.d.ts", "meteor.client.d.ts", "meteor.server.d.ts", etc), should be made by altering "scripts/generate-definition-files.js".  Often, fixing a type/signature mapping near the top is all that is necessary.  Corresponding changes should also be made to "script-definition-tests/meteor-tests.ts" and "tinytest-definition-tests/meteor-tests.ts".
     * Some meteor core definitions can be found in manually maintained definition files ("lib/meteor-common-manually-maintained-definitions.d.ts", "lib/meteor-client-manually-maintained-definitions.d.ts", etc), which contain definitions that can't be automatically generated.
-
-*It would be great if someone developing on Windows could add to the Usage section with instructions for Windows!*
 
 ### Creating meteor.d.ts and its related files
 
