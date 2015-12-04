@@ -45,7 +45,7 @@ declare module Meteor {
         _id?:string;
         username?:string;
         emails?:Meteor.UserEmail[];
-        createdAt?: number;
+        createdAt?: Date;
         profile?: any;
         services?: any;
     }
