@@ -31,6 +31,14 @@ Package.onUse(function (api, where) {
         'definitions/underscore.d.ts',
         'definitions/underscore.string.d.ts',
         'definitions/meteorhacks-npm.d.ts'
+        'definitions/errors.d.ts"'
+        'definitions/flowRouter.d.ts"'
+        'definitions/google-maps-smart-package.d.ts"'
+        'definitions/lib.d.ts"'
+        'definitions/messageFormat.d.ts"'
+        'definitions/semanticui.d.ts"'
+        'definitions/subsManager.d.ts"'
+        'definitions/tomiUploads.d.ts"'
     ], ['server']);
 });
 
