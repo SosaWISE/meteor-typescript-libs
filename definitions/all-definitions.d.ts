@@ -29,3 +29,16 @@
 /// <reference path="google.maps.d.ts" />
 /// <reference path="d3.d.ts" />
 /// <reference path="node.d.ts" />
+
+/**
+ * These are uncategorized (Should they be added here? I thikn at least flowRouter.d.ts should be...)
+ */
+
+/// <reference path="errors.d.ts" />
+/// <reference path="flowRouter.d.ts" />
+/// <reference path="google-maps-smart-package.d.ts" />
+/// <reference path="lib.d.ts" />
+/// <reference path="messageFormat.d.ts" />
+/// <reference path="semanticui.d.ts" />
+/// <reference path="subsManager.d.ts" />
+/// <reference path="tomiUploads.d.ts" />
