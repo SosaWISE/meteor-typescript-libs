@@ -250,7 +250,7 @@ declare module Meteor {
 				requestPermissions?: string[];
 				requestOfflineToken?: boolean;
 				loginUrlParameters?: Object;
-				userEmail?: string;
+				loginHint?: string;
 				loginStyle?: string;
 				redirectUrl?: string;
 			}, callback?: Function): void;

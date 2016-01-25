@@ -278,7 +278,7 @@ declare module Meteor {
 	var release: string;
 	function setInterval(func: Function, delay: number): number;
 	function setTimeout(func: Function, delay: number): number;
-	var settings: {[id:string]: any};
+	var settings: { public: {[id:string]: any}, private: {[id:string]: any}, [id:string]: any};
 	function startup(func: Function): void;
 	var users: Mongo.Collection<User>;
 	function wrapAsync(func: Function, context?: Object): any;
@@ -310,7 +310,7 @@ declare module Mongo {
 				transform?: Function;
 			}): T;
 		insert(doc: T, callback?: Function): string;
-		remove(selector: Mongo.Selector | Mongo.ObjectID | string, callback?: Function): void;
+		remove(selector: Mongo.Selector | Mongo.ObjectID | string, callback?: Function): number;
 		update(selector: Mongo.Selector | Mongo.ObjectID | string, modifier: Mongo.Modifier, options?: {
 				multi?: boolean;
 				upsert?: boolean;

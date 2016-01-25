@@ -59,6 +59,7 @@ var thirdPartyDefLibs = [
     'https://github.com/borisyankov/DefinitelyTyped/raw/master/underscore.string/underscore.string.d.ts',
     'https://github.com/borisyankov/DefinitelyTyped/raw/master/jquery/jquery.d.ts',
     'https://github.com/borisyankov/DefinitelyTyped/raw/master/backbone/backbone.d.ts',
+    'https://github.com/borisyankov/DefinitelyTyped/raw/master/backbone/backbone-global.d.ts',
     'https://github.com/borisyankov/DefinitelyTyped/raw/master/bootstrap/bootstrap.d.ts',
     'https://github.com/borisyankov/DefinitelyTyped/raw/master/d3/d3.d.ts',
     'https://github.com/borisyankov/DefinitelyTyped/raw/master/handlebars/handlebars.d.ts',
@@ -122,7 +123,8 @@ var signatureElementMappings = {
     'find\\(selector: any, options\\?\\);': 'find(selector?: any, options?): Meteor.Cursor<T>;',
     'findOne\\(selector: any, options\\?\\);': 'findOne(selector?, options?): T;',
     'insert\\(doc: Object, callback\\?: Function\\)': 'insert(doc: T, callback?: Function)',
-    'subscribe\\(name: string, arg1, arg2...\\?: any, callbacks\\?: any\\)': 'subscribe(name: string, ...args: any[])',
+//    'subscribe\\(name: string, arg1, arg2...\\?: any, callbacks\\?: any\\)': 'subscribe(name: string, ...args: any[])',
+    'subscribe\\(name: string, arg1, arg2...\\?: EJSONable, callbacks\\?: Function \\| Object\\)': 'subscribe(name: string, ...args: any[])',
     'call\\(name: string, arg1, arg2...\\?: EJSONable, asyncCallback\\?: Function\\)': 'call(name: string, ...args: any[])',
     'function body\\(\\)': 'body: TemplateStaic',
     'helpers\\(helpers: Object\\)': 'helpers(helpers:{[id:string]: any})',
@@ -160,7 +162,7 @@ var propertyAndReturnTypeMappings = {
     'Meteor.wrapAsync': 'any',
     'Meteor.startup': 'void',
     'Meteor.absoluteUrl': 'string',
-    'Meteor.settings': '{[id:string]: any}',
+    'Meteor.settings': '{ public: {[id:string]: any}, private: {[id:string]: any}, [id:string]: any}',
     'Meteor.release': 'string',
     'Meteor.publish': 'void',
     'Meteor.subscribe': 'Meteor.SubscriptionHandle',
@@ -189,7 +191,7 @@ var propertyAndReturnTypeMappings = {
     'Mongo.Collection#insert': 'string',
     'Mongo.Collection#update': 'number',
     'Mongo.Collection#upsert': '{numberAffected?: number; insertedId?: string;}',
-    'Mongo.Collection#remove': 'void',
+    'Mongo.Collection#remove': 'number',
     'Mongo.Collection#allow': 'boolean',
     'Mongo.Collection#deny': 'boolean',
     'Mongo.Collection#rawCollection': 'any',
@@ -658,9 +660,6 @@ var accountsPropertyIsAlreadyProcessed = function accountsPropertyIsAlreadyProce
     if (accountsPropertiesProcessed.indexOf(property) > -1) {
         return true;
     } else {
-        console.log('checking module = ' + moduleOrInterface);
-        console.log('checking property = ' + property);
-        console.log('No!');
         accountsPropertiesProcessed.push(property);
         return false;
     }

@@ -45,7 +45,7 @@ declare module Meteor {
         _id?:string;
         username?:string;
         emails?:Meteor.UserEmail[];
-        createdAt?: Date;
+        createdAt?: number;
         profile?: any;
         services?: any;
     }
@@ -556,7 +556,7 @@ declare module Meteor {
 				requestPermissions?: string[];
 				requestOfflineToken?: boolean;
 				loginUrlParameters?: Object;
-				userEmail?: string;
+				loginHint?: string;
 				loginStyle?: string;
 				redirectUrl?: string;
 			}, callback?: Function): void;
@@ -570,7 +570,7 @@ declare module Meteor {
 	var release: string;
 	function setInterval(func: Function, delay: number): number;
 	function setTimeout(func: Function, delay: number): number;
-	var settings: {[id:string]: any};
+	var settings: { public: {[id:string]: any}, private: {[id:string]: any}, [id:string]: any};
 	function startup(func: Function): void;
 	function status(): Meteor.StatusEnum;
 	function subscribe(name: string, ...args: any[]): Meteor.SubscriptionHandle;
@@ -622,7 +622,7 @@ declare module Mongo {
 		insert(doc: T, callback?: Function): string;
 		rawCollection(): any;
 		rawDatabase(): any;
-		remove(selector: Mongo.Selector | Mongo.ObjectID | string, callback?: Function): void;
+		remove(selector: Mongo.Selector | Mongo.ObjectID | string, callback?: Function): number;
 		update(selector: Mongo.Selector | Mongo.ObjectID | string, modifier: Mongo.Modifier, options?: {
 				multi?: boolean;
 				upsert?: boolean;
