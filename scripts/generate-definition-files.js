@@ -417,7 +417,7 @@ const allDefinitionsFileOmissions = [
 var buildPackageFileContent = function buildPackageFileContent(descriptionContents, definitionAssetContent, testAssetContent) {
     return `${descriptionContents}
 Package.onUse(function (api, where) {
-    api.versionsFrom('1.2.1');
+    api.versionsFrom('METEOR@1.0');
     api.addAssets([
         ${definitionAssetContent}
     ], 'server')
