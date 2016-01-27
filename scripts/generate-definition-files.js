@@ -12,7 +12,7 @@
  */
 
 // All paths should be relative to this directory, "scripts"
-var vm = require('vm'),
+const vm = require('vm'),
     fs = require('fs'),
     _ = require('lodash'),
     DEF_DIR = './definitions/',
@@ -22,9 +22,13 @@ var vm = require('vm'),
     METEOR_API_URL = 'https://raw.githubusercontent.com/meteor/meteor/devel/docs/client/data.js',
     SAVED_METEOR_API_FILE_PATH = './lib/data.js',
     METEOR_HEADER_FILE = './lib/meteor-definitions-header.d.ts',
-    DEBUG = true,
-    //isForMeteorMasterDefs = false,
-    definitionFilenames = [], // References to these files will be written to the master definition file
+    PACKAGE_DESCRIBE = './lib/package-describe.js',
+    PACKAGE_FILE = './package.js',
+    ALL_DEFINITIONS_TOP = './lib/all-definitions-top.d.ts',
+    ALL_DEFINITIONS_FILE = './definitions/all-definitions.d.ts',
+    DEBUG = true;
+
+var definitionFilenames = [], // References to these files will be written to the master definition file
     testFilenames = ['meteor-tests.ts'],
     moduleNames = [],
     globalClassNames = [],
@@ -33,7 +37,7 @@ var vm = require('vm'),
 // Global var DocsData created in function runApiFileInThisContext()
 
 
-var METEOR_LOCUS_CONFIGS = {
+const METEOR_LOCUS_CONFIGS = {
     all: {locusID: 'All', fileName: 'meteor.d.ts'},
     common: {locusID: 'Anywhere', manualDefsFile: './lib/meteor-common-manually-maintained-definitions.d.ts', fileName: 'meteor.common.d.ts'},
     client: {locusID: 'Client', manualDefsFile: './lib/meteor-client-manually-maintained-definitions.d.ts', fileName: 'meteor.client.d.ts'},
@@ -43,7 +47,7 @@ var METEOR_LOCUS_CONFIGS = {
 };
 
 // Not currently called -- not sure how to automatically generate latest lib.d.ts
-var typescriptCoreLibs = [
+const typescriptCoreLibs = [
     'https://github.com/Microsoft/TypeScript/raw/master/src/lib/core.d.ts',
     'https://github.com/Microsoft/TypeScript/raw/master/src/lib/dom.generated.d.ts',
     'https://github.com/Microsoft/TypeScript/raw/master/src/lib/extensions.d.ts',
@@ -53,7 +57,7 @@ var typescriptCoreLibs = [
     'https://github.com/Microsoft/TypeScript/raw/master/src/lib/webworker.importscripts.d.ts'
 ];
 
-var thirdPartyDefLibs = [
+const thirdPartyDefLibs = [
     //'https://github.com/borisyankov/DefinitelyTyped/tree/master/mongodb/mongodb.d.ts',
     'https://github.com/borisyankov/DefinitelyTyped/raw/master/underscore/underscore.d.ts',
     'https://github.com/borisyankov/DefinitelyTyped/raw/master/underscore.string/underscore.string.d.ts',
@@ -69,7 +73,7 @@ var thirdPartyDefLibs = [
     //'https://github.com/borisyankov/DefinitelyTyped/raw/master/lodash/lodash.d.ts'
 ];
 
-var thirdPartyDefTests = [
+const thirdPartyDefTests = [
     //'https://github.com/borisyankov/DefinitelyTyped/raw/master/mongodb/mongodb-tests.ts',  // not working right now
     'https://github.com/borisyankov/DefinitelyTyped/raw/master/underscore/underscore-tests.ts',
     'https://github.com/borisyankov/DefinitelyTyped/raw/master/underscore.string/underscore.string-tests.ts',
@@ -85,7 +89,7 @@ var thirdPartyDefTests = [
 
 
 // keys are strings that will be sent into new RegExp(<regexp string>)
-var argTypeMappings = {
+const argTypeMappings = {
     'function': 'Function',
     'MatchPattern': 'any',
     'Array.<String>': 'string[]',
@@ -117,7 +121,7 @@ var argTypeMappings = {
 };
 
 // Regex mappings for full flexibility
-var signatureElementMappings = {
+const signatureElementMappings = {
     'clone\\(val: EJSON\\): T;': 'clone<T>(val:T): T;',
     'fetch\\(\\);': 'fetch(): Array<T>;',
     'find\\(selector: any, options\\?\\);': 'find(selector?: any, options?): Meteor.Cursor<T>;',
@@ -155,7 +159,7 @@ var signatureElementMappings = {
     'map\\(callback: <T>\\(doc: T, index: number, cursor: Mongo.Cursor<T>\\) => void':  'map<U>(callback: (doc: T, index: number, cursor: Mongo.Cursor<T>) => U'
 };
 
-var propertyAndReturnTypeMappings = {
+const propertyAndReturnTypeMappings = {
     'Meteor.isClient': 'boolean',
     'Meteor.isServer': 'boolean',
     'Meteor.isCordova': 'boolean',
@@ -389,6 +393,77 @@ var propertyAndReturnTypeMappings = {
     'Plugin.registerMinifier': 'void',
     'Plugin.registerSourceHandler': 'void'
 
+};
+
+const PACKAGE_FILE_OMISSIONS = [
+    METEOR_LOCUS_CONFIGS.common.fileName,
+    METEOR_LOCUS_CONFIGS.client.fileName,
+    METEOR_LOCUS_CONFIGS.package.fileName,
+    METEOR_LOCUS_CONFIGS.package.fileName,
+    METEOR_LOCUS_CONFIGS.plugin.fileName,
+    METEOR_LOCUS_CONFIGS.server.fileName
+];
+
+const allDefinitionsFileOmissions = [
+    METEOR_LOCUS_CONFIGS.common.fileName,
+    METEOR_LOCUS_CONFIGS.client.fileName,
+    METEOR_LOCUS_CONFIGS.package.fileName,
+    METEOR_LOCUS_CONFIGS.package.fileName,
+    METEOR_LOCUS_CONFIGS.plugin.fileName,
+    METEOR_LOCUS_CONFIGS.server.fileName,
+    'all-definitions.d.ts'
+];
+
+var buildPackageFileContent = function buildPackageFileContent(descriptionContents, definitionAssetContent, testAssetContent) {
+    return `${descriptionContents}
+Package.onUse(function (api, where) {
+    api.versionsFrom('1.2.1');
+    api.addAssets([
+        ${definitionAssetContent}
+    ], 'server')
+});
+
+Package.onTest(function(api) {
+    api.use('meteortypescript:typescript-libs', ['server']);
+    api.use(['tinytest', 'test-helpers', 'underscore'], ['server']);
+    api.addFiles('scripts/typescript-libs-tests.js', ['server']);
+    api.addAssets([
+        ${definitionAssetContent},
+        ${testAssetContent}
+    ], 'server');
+});`
+
+};
+
+var getFormattedTestFileNames = function getFormattedTestFileNames(){
+    var testFiles = fs.readdirSync(TINYTEST_TEST_DIR);
+    testFiles = testFiles.filter(fileName => fileName.indexOf('.ts') > 0);
+    return "'" + TINYTEST_TEST_DIR + testFiles.join("',\n\t\t'" + TINYTEST_TEST_DIR) + "'";
+};
+
+var getFormattedPackageDefinitionFileNames = function getFormattedPackageDefinitionFileNames(){
+    var definitionFiles = fs.readdirSync(DEF_DIR),
+        definitionFiles = definitionFiles.filter(fileName => !_.includes(PACKAGE_FILE_OMISSIONS, fileName));
+    return "'" + DEF_DIR + definitionFiles.join("',\n\t\t'" + DEF_DIR) + "'";
+};
+
+var createPackageFile = function createPackageFile() {
+    var descriptionContents = getFileContents(PACKAGE_DESCRIBE);
+    var definitionAssetContent = getFormattedPackageDefinitionFileNames();
+    var testAssetContent = getFormattedTestFileNames();
+    var newPackageFileContents = buildPackageFileContent(descriptionContents, definitionAssetContent, testAssetContent);
+    writeFileToDisk(PACKAGE_FILE, newPackageFileContents);
+};
+
+var createAllDefinitionsFile = function createAllDefinitionsFile(){
+    var contentTop = getFileContents(ALL_DEFINITIONS_TOP),
+        definitionFiles = fs.readdirSync(DEF_DIR),
+        definitionFiles = definitionFiles.filter(fileName => !_.includes(allDefinitionsFileOmissions, fileName)),
+        references = '/// <reference path="' + definitionFiles.join('" />\n/// <reference path="') + '" />',
+        newAllDefinitionFileContent =
+            `${contentTop}
+${references}`;
+    writeFileToDisk(ALL_DEFINITIONS_FILE, newAllDefinitionFileContent);
 };
 
 var isMakingAllDefs = function isMakingAllDefs(locusID) {
@@ -820,6 +895,7 @@ var createMeteorDefFiles = function createMeteorDefFiles() {
 };
 
 createMeteorDefFiles();
-//createTypeScriptLibFile();  Not currently working -- not sure how to generated latest typescript lib.d.ts file
 getThirdPartyDefLibs();
 getThirdPartyDefTests();
+createAllDefinitionsFile();
+createPackageFile();
