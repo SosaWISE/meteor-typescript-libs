@@ -5,7 +5,7 @@
  *
  *  Thanks to Sam Hatoum for the base code for auto-generating this file.
  *
- *  supports Meteor 1.2.0.2
+ *  supports Meteor 1.3
  */
 
 
@@ -63,7 +63,8 @@ declare module Accounts {
 }
 
 declare module App {
-	function accessRule(domainRule: string, options?: {
+	function accessRule(pattern: string, options?: {
+				type?: string;
 				launchExternal?: boolean;
 			}): void;
 	function configurePlugin(id: string, config: Object): void;
@@ -147,6 +148,7 @@ declare module Package {
 				documentation?: string;
 				debugOnly?: boolean;
 				prodOnly?: boolean;
+				testOnly?: boolean;
 			}): void;
 	function onTest(func: Function): void;
 	function onUse(func: Function): void;

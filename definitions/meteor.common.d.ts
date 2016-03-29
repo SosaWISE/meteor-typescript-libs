@@ -5,7 +5,7 @@
  *
  *  Thanks to Sam Hatoum for the base code for auto-generating this file.
  *
- *  supports Meteor 1.2.0.2
+ *  supports Meteor 1.3
  */
 
 
@@ -134,6 +134,11 @@ declare module Random {
 }
 
 declare module Accounts {
+    function loginServicesConfigured(): boolean;
+
+    function onPageLoadLogin(func: Function): void;
+}
+declare module Accounts {
 	function createUser(options: {
 				username?: string;
 				email?: string;
@@ -172,7 +177,8 @@ declare module Accounts {
 }
 
 declare module App {
-	function accessRule(domainRule: string, options?: {
+	function accessRule(pattern: string, options?: {
+				type?: string;
 				launchExternal?: boolean;
 			}): void;
 	function configurePlugin(id: string, config: Object): void;
@@ -252,10 +258,10 @@ declare module Match {
 declare module Meteor {
 	var Error: ErrorStatic;
 	interface ErrorStatic {
-		new(error: string, reason?: string, details?: string): Error;
+		new(error: string | number, reason?: string, details?: string): Error;
 	}
 	interface Error {
-		error: string;
+		error: string | number;
 		reason?: string;
 		details?: string;
 	}
@@ -273,6 +279,8 @@ declare module Meteor {
 	function clearTimeout(id: number): void;
 	var isClient: boolean;
 	var isCordova: boolean;
+	var isDevelopment: boolean;
+	var isProduction: boolean;
 	var isServer: boolean;
 	function methods(methods: Object): void;
 	var release: string;
@@ -301,6 +309,9 @@ declare module Mongo {
 				fields?: Mongo.FieldSpecifier;
 				reactive?: boolean;
 				transform?: Function;
+				disableOplog?: boolean;
+				pollingIntervalMs?: number;
+				pollingThrottleMs?: number;
 			}): Mongo.Cursor<T>;
 		findOne(selector?: Mongo.Selector | Mongo.ObjectID | string, options?: {
 				sort?: Mongo.SortSpecifier;
@@ -384,6 +395,7 @@ declare module HTTP {
 			}, asyncCallback?: Function): HTTP.HTTPResponse;
 	function del(url: string, callOptions?: Object, asyncCallback?: Function): HTTP.HTTPResponse;
 	function get(url: string, callOptions?: Object, asyncCallback?: Function): HTTP.HTTPResponse;
+	function patch(url: string, callOptions?: Object, asyncCallback?: Function): HTTP.HTTPResponse;
 	function post(url: string, callOptions?: Object, asyncCallback?: Function): HTTP.HTTPResponse;
 	function put(url: string, callOptions?: Object, asyncCallback?: Function): HTTP.HTTPResponse;
 }

@@ -5,7 +5,7 @@
  *
  *  Thanks to Sam Hatoum for the base code for auto-generating this file.
  *
- *  supports Meteor 1.2.0.2
+ *  supports Meteor 1.3
  */
 
 
@@ -15,7 +15,7 @@
 
 declare module Meteor {
     /** Start definitions for Template **/
-    interface Event {
+    export interface Event {
         type:string;
         target:HTMLElement;
         currentTarget:HTMLElement;
@@ -39,10 +39,13 @@ declare module Meteor {
 
     interface LoginWithExternalServiceOptions {
         requestPermissions?: string[];
-        requestOfflineToken?: Boolean;
-        forceApprovalPrompt?: Boolean;
-        userEmail?: string;
+        requestOfflineToken?: boolean;
+        loginUrlParameters?: {[param: string]: any}
+        loginHint?: string;
         loginStyle?: string;
+        redirectUrl?: "popup" | "redirect";
+        profile?: any;
+        email?: string;
     }
 
     function loginWithMeteorDeveloperAccount(options?: Meteor.LoginWithExternalServiceOptions, callback?: Function): void;
@@ -145,7 +148,8 @@ declare module Accounts {
 }
 
 declare module App {
-	function accessRule(domainRule: string, options?: {
+	function accessRule(pattern: string, options?: {
+				type?: string;
 				launchExternal?: boolean;
 			}): void;
 	function configurePlugin(id: string, config: Object): void;
@@ -394,6 +398,7 @@ interface TemplateStatic {
 	$:any; 
 	body: Template;
 	currentData(): {};
+	deregisterHelper(name: string): void;
 	instance(): Blaze.TemplateInstance;
 	parentData(numLevels?: number): {};
 	registerHelper(name: string, helperFunction: Function): void;

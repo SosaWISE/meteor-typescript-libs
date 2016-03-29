@@ -2,7 +2,7 @@ var _ = require('lodash');
 var fs = require("fs");
 var SCRIPT_TEST_DIR = './script-definition-tests/';
 
-var testFilenames=fs.readdirSync("./tinytest-definition-tests");
+var testFilenames = fs.readdirSync("./tinytest-definition-tests");
 
 var testsWithModuleFlag = ['handlebars-tests.ts', 'node-tests.ts', 'node-fibers-tests.ts'];
 
@@ -11,11 +11,9 @@ var isTypeScriptFile = function isTypeScriptFile(filename) {
 };
 
 _.each(testFilenames, function(filename) {
+	if (!isTypeScriptFile(filename)) return;
 	console.log('Running transpilation test: ' + filename);
 
-    if (!isTypeScriptFile(filename)) return;
-
-	//var sys = require('sys');
 	var exec = require('child_process').exec;
 
 	function displayOutput(error, stdout, stderror) {
@@ -30,9 +28,9 @@ _.each(testFilenames, function(filename) {
 	}
 
 	if (_.contains(testsWithModuleFlag, filename)) {
-		exec("tsc -m commonjs " + SCRIPT_TEST_DIR + filename, displayOutput);
+		exec("tsc --allowUnreachableCode -m commonjs " + SCRIPT_TEST_DIR + filename, displayOutput);
 	} else {
-		exec("tsc " + SCRIPT_TEST_DIR + filename, displayOutput);
+		exec("tsc --allowUnreachableCode " + SCRIPT_TEST_DIR + filename, displayOutput);
 
 	}
 });

@@ -5,7 +5,7 @@
  *
  *  Thanks to Sam Hatoum for the base code for auto-generating this file.
  *
- *  supports Meteor 1.2.0.2
+ *  supports Meteor 1.3
  */
 
 
@@ -133,13 +133,18 @@ declare module Random {
     function choice(str:string):string; // @param str, @return a random char in str
 }
 
+declare module Accounts {
+    function loginServicesConfigured(): boolean;
+
+    function onPageLoadLogin(func: Function): void;
+}
 /**
  * These are the client modules and interfaces that can't be automatically generated from the Meteor data.js file
  */
 
 declare module Meteor {
     /** Start definitions for Template **/
-    interface Event {
+    export interface Event {
         type:string;
         target:HTMLElement;
         currentTarget:HTMLElement;
@@ -163,10 +168,13 @@ declare module Meteor {
 
     interface LoginWithExternalServiceOptions {
         requestPermissions?: string[];
-        requestOfflineToken?: Boolean;
-        forceApprovalPrompt?: Boolean;
-        userEmail?: string;
+        requestOfflineToken?: boolean;
+        loginUrlParameters?: {[param: string]: any}
+        loginHint?: string;
         loginStyle?: string;
+        redirectUrl?: "popup" | "redirect";
+        profile?: any;
+        email?: string;
     }
 
     function loginWithMeteorDeveloperAccount(options?: Meteor.LoginWithExternalServiceOptions, callback?: Function): void;
@@ -251,16 +259,19 @@ declare module BrowserPolicy {
 
 declare module Meteor {
     interface EmailFields {
-        subject?: Function;
-        text?: Function;
+        from?: () => string;
+        subject?: (user: Meteor.User) => string;
+        text?: (user: Meteor.User, url: string) => string;
+        html?: (user: Meteor.User, url: string) => string;
     }
 
     interface EmailTemplates {
-        from: string;
-        siteName: string;
-        resetPassword: Meteor.EmailFields;
-        enrollAccount:  Meteor.EmailFields;
-        verifyEmail:  Meteor.EmailFields;
+        from?: string;
+        siteName?: string;
+        headers?: { [id: string]: string };  // TODO: should define IHeaders interface
+        resetPassword?: Meteor.EmailFields;
+        enrollAccount?:  Meteor.EmailFields;
+        verifyEmail?:  Meteor.EmailFields;
     }
 
     interface Connection {
@@ -269,6 +280,16 @@ declare module Meteor {
         onClose: Function;
         clientAddress: string;
         httpHeaders: Object;
+    }
+
+    interface IValidateLoginAttemptCbOpts {
+        type: string;
+        allowed: boolean;
+        error: Error;
+        user: Meteor.User;
+        connection: Meteor.Connection;
+        methodName: string;
+        methodArguments: any[];
     }
 }
 
@@ -280,6 +301,18 @@ declare module Mongo {
         fetch?: string[];
         transform?: Function;
     }
+}
+
+declare module Accounts {
+    interface IValidateLoginAttemptCbOpts {
+      	type?: string;
+      	allowed?: boolean;
+      	error?: Meteor.Error;
+      	user?: Meteor.User;
+      	connection?: Meteor.Connection;
+      	methodName?: string;
+      	methodArguments?: any[];
+      }
 }
 
 interface MailComposerOptions {
@@ -399,12 +432,13 @@ declare module Accounts {
 	function logout(callback?: Function): void;
 	function logoutOtherClients(callback?: Function): void;
 	function onCreateUser(func: Function): void;
-	function validateLoginAttempt(func: Function): { stop: () => void };
+	function validateLoginAttempt(cb: (params: Accounts.IValidateLoginAttemptCbOpts) => boolean): { stop: () => void };
 	function validateNewUser(func: Function): boolean;
 }
 
 declare module App {
-	function accessRule(domainRule: string, options?: {
+	function accessRule(pattern: string, options?: {
+				type?: string;
 				launchExternal?: boolean;
 			}): void;
 	function configurePlugin(id: string, config: Object): void;
@@ -529,10 +563,10 @@ declare module Match {
 declare module Meteor {
 	var Error: ErrorStatic;
 	interface ErrorStatic {
-		new(error: string, reason?: string, details?: string): Error;
+		new(error: string | number, reason?: string, details?: string): Error;
 	}
 	interface Error {
-		error: string;
+		error: string | number;
 		reason?: string;
 		details?: string;
 	}
@@ -551,6 +585,8 @@ declare module Meteor {
 	function disconnect(): void;
 	var isClient: boolean;
 	var isCordova: boolean;
+	var isDevelopment: boolean;
+	var isProduction: boolean;
 	var isServer: boolean;
 	function loggingIn(): boolean;
 	function loginWith<ExternalService>(options?: {
@@ -612,6 +648,9 @@ declare module Mongo {
 				fields?: Mongo.FieldSpecifier;
 				reactive?: boolean;
 				transform?: Function;
+				disableOplog?: boolean;
+				pollingIntervalMs?: number;
+				pollingThrottleMs?: number;
 			}): Mongo.Cursor<T>;
 		findOne(selector?: Mongo.Selector | Mongo.ObjectID | string, options?: {
 				sort?: Mongo.SortSpecifier;
@@ -670,6 +709,7 @@ declare module Package {
 				documentation?: string;
 				debugOnly?: boolean;
 				prodOnly?: boolean;
+				testOnly?: boolean;
 			}): void;
 	function onTest(func: Function): void;
 	function onUse(func: Function): void;
@@ -736,6 +776,7 @@ declare module HTTP {
 			}, asyncCallback?: Function): HTTP.HTTPResponse;
 	function del(url: string, callOptions?: Object, asyncCallback?: Function): HTTP.HTTPResponse;
 	function get(url: string, callOptions?: Object, asyncCallback?: Function): HTTP.HTTPResponse;
+	function patch(url: string, callOptions?: Object, asyncCallback?: Function): HTTP.HTTPResponse;
 	function post(url: string, callOptions?: Object, asyncCallback?: Function): HTTP.HTTPResponse;
 	function put(url: string, callOptions?: Object, asyncCallback?: Function): HTTP.HTTPResponse;
 }
@@ -842,6 +883,7 @@ interface TemplateStatic {
 	$:any; 
 	body: Template;
 	currentData(): {};
+	deregisterHelper(name: string): void;
 	instance(): Blaze.TemplateInstance;
 	parentData(numLevels?: number): {};
 	registerHelper(name: string, helperFunction: Function): void;

@@ -121,3 +121,9 @@ declare module Random {
     function choice(array:any[]):string; // @param array, @return a random element in array
     function choice(str:string):string; // @param str, @return a random char in str
 }
+
+declare module Accounts {
+    function loginServicesConfigured(): boolean;
+
+    function onPageLoadLogin(func: Function): void;
+}

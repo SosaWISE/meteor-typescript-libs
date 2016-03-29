@@ -4,16 +4,19 @@
 
 declare module Meteor {
     interface EmailFields {
-        subject?: Function;
-        text?: Function;
+        from?: () => string;
+        subject?: (user: Meteor.User) => string;
+        text?: (user: Meteor.User, url: string) => string;
+        html?: (user: Meteor.User, url: string) => string;
     }
 
     interface EmailTemplates {
-        from: string;
-        siteName: string;
-        resetPassword: Meteor.EmailFields;
-        enrollAccount:  Meteor.EmailFields;
-        verifyEmail:  Meteor.EmailFields;
+        from?: string;
+        siteName?: string;
+        headers?: { [id: string]: string };  // TODO: should define IHeaders interface
+        resetPassword?: Meteor.EmailFields;
+        enrollAccount?:  Meteor.EmailFields;
+        verifyEmail?:  Meteor.EmailFields;
     }
 
     interface Connection {
@@ -22,6 +25,16 @@ declare module Meteor {
         onClose: Function;
         clientAddress: string;
         httpHeaders: Object;
+    }
+
+    interface IValidateLoginAttemptCbOpts {
+        type: string;
+        allowed: boolean;
+        error: Error;
+        user: Meteor.User;
+        connection: Meteor.Connection;
+        methodName: string;
+        methodArguments: any[];
     }
 }
 
@@ -33,6 +46,18 @@ declare module Mongo {
         fetch?: string[];
         transform?: Function;
     }
+}
+
+declare module Accounts {
+    interface IValidateLoginAttemptCbOpts {
+      	type?: string;
+      	allowed?: boolean;
+      	error?: Meteor.Error;
+      	user?: Meteor.User;
+      	connection?: Meteor.Connection;
+      	methodName?: string;
+      	methodArguments?: any[];
+      }
 }
 
 interface MailComposerOptions {

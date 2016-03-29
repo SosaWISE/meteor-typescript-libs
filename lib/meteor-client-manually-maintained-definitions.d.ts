@@ -4,7 +4,7 @@
 
 declare module Meteor {
     /** Start definitions for Template **/
-    interface Event {
+    export interface Event {
         type:string;
         target:HTMLElement;
         currentTarget:HTMLElement;
@@ -28,10 +28,13 @@ declare module Meteor {
 
     interface LoginWithExternalServiceOptions {
         requestPermissions?: string[];
-        requestOfflineToken?: Boolean;
-        forceApprovalPrompt?: Boolean;
-        userEmail?: string;
+        requestOfflineToken?: boolean;
+        loginUrlParameters?: {[param: string]: any}
+        loginHint?: string;
         loginStyle?: string;
+        redirectUrl?: "popup" | "redirect";
+        profile?: any;
+        email?: string;
     }
 
     function loginWithMeteorDeveloperAccount(options?: Meteor.LoginWithExternalServiceOptions, callback?: Function): void;

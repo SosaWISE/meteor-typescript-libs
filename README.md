@@ -1,11 +1,18 @@
 # Meteor TypeScript libraries
 
-This project adds TypeScript definition files related to Meteor.  It includes *meteor.d.ts* plus many others.  These are definitions for Meteor 1.2.1, and they require TypeScript 1.4 or higher (to allow Union types).  These definitions are mostly backwards compatible for any 1.* Meteor version.
+This project adds TypeScript definition files related to Meteor.  It includes *meteor.d.ts* plus many others.  These are definitions for Meteor 1.3, and they require TypeScript 1.8 or higher (to allow for string literal types).  These definitions are mostly backwards compatible for any 1.* Meteor version.
+
+## Deprecation?
+
+This package will probably soon be deprecated.  There is currently an effort supported by the Meteor Development Group to create a TypeScript build compiler package, and an early version of the package can be tested using [`barbatus:typescript`](https://atmospherejs.com/barbatus/typescript).  This package will eventually incorporated as a Meteor core package (e.g. like the `coffeescript` package).  It appears that the recommended practice for adding definitions using that package will be to add them using the [`typings`](https://github.com/typings/typings) tool.
+
+You can follow discussion about this effort [here](https://github.com/Urigo/angular2-meteor/issues/102#issuecomment-200915763).
+
 
 ## Why use TypeScript?
 [TypeScript](http://www.typescriptlang.org/) is a supserset of JavaScript that enforces *relaxed* static typing and compiles to plain Javascript.  It offers most of the benefits of a strongly typed language without requiring you to use strong typing.
 
-In general, TypeScript will NOT make JavaScript prettier (like CoffeeScript).  However, it can help simplify JavaScript programming for the many object oriented coders out there. TypeScript also provides transparent access to features only available in ECMAScript 6 and above.
+In general, TypeScript will NOT make JavaScript prettier (like CoffeeScript).  However, it can help simplify JavaScript programming for the many object oriented coders out there. TypeScript also provides transparent access to features only available in ECMAScript 7 and above.
 
 For further reading about TypeScript, please refer to the [TypeScript Handbook](http://www.typescriptlang.org/Handbook).
 ##Usage
@@ -165,7 +172,38 @@ The last option is to compile code from the command line. With node and the Type
 
 Contributions are welcome. Remember that this project is about typing meteor packages in TypeScript.
 
-* Adding new definition files is now easy.  Just add the definition file in the ./definitions directory.  The script will automatically alter *package.js* and *./definitions/all-definitions.d.ts*.  Please attempt to create a test file as well in ./script-definition-tests and ./tinytest-definition-tests as well.
+* Adding new definition files for definitions not found in the [DefinitelyTyped repo](https://github.com/borisyankov/DefinitelyTyped) (e.g. Meteor packages) is now easy.  Just add the definition file in the `./definitions` directory.  The script will automatically alter *package.js* and *./definitions/all-definitions.d.ts*.  Please attempt to create a test file as well in ./script-definition-tests and ./tinytest-definition-tests as well.
+* Adding new third-party definition files found in the [DefinitelyTyped repo](https://github.com/borisyankov/DefinitelyTyped) should add new entries to this section of `./scripts/generate-definition-files.js`:
+
+        const thirdPartyDefLibs = [
+            'https://github.com/borisyankov/DefinitelyTyped/raw/master/underscore/underscore.d.ts',
+            'https://github.com/borisyankov/DefinitelyTyped/raw/master/underscore.string/underscore.string.d.ts',
+            'https://github.com/borisyankov/DefinitelyTyped/raw/master/jquery/jquery.d.ts',
+            'https://github.com/borisyankov/DefinitelyTyped/raw/master/backbone/backbone.d.ts',
+            'https://github.com/borisyankov/DefinitelyTyped/raw/master/backbone/backbone-global.d.ts',
+            'https://github.com/borisyankov/DefinitelyTyped/raw/master/bootstrap/bootstrap.d.ts',
+            'https://github.com/borisyankov/DefinitelyTyped/raw/master/d3/d3.d.ts',
+            'https://github.com/borisyankov/DefinitelyTyped/raw/master/handlebars/handlebars.d.ts',
+            'https://github.com/borisyankov/DefinitelyTyped/raw/master/node/node-0.11.d.ts',
+            'https://github.com/borisyankov/DefinitelyTyped/raw/master/node-fibers/node-fibers.d.ts',
+            'https://github.com/borisyankov/DefinitelyTyped/raw/master/googlemaps/google.maps.d.ts',
+            'https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/master/cryptojs/cryptojs.d.ts',
+            'https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/master/moment/moment-node.d.ts'
+        ];
+        
+        const thirdPartyDefTests = [
+            'https://github.com/borisyankov/DefinitelyTyped/raw/master/underscore/underscore-tests.ts',
+            'https://github.com/borisyankov/DefinitelyTyped/raw/master/underscore.string/underscore.string-tests.ts',
+            'https://github.com/borisyankov/DefinitelyTyped/raw/master/jquery/jquery-tests.ts',
+            'https://github.com/borisyankov/DefinitelyTyped/raw/master/backbone/backbone-tests.ts',
+            'https://github.com/borisyankov/DefinitelyTyped/raw/master/bootstrap/bootstrap-tests.ts',
+            'https://github.com/borisyankov/DefinitelyTyped/raw/master/d3/d3-tests.ts',
+            'https://github.com/borisyankov/DefinitelyTyped/raw/master/handlebars/handlebars-tests.ts',
+            'https://github.com/borisyankov/DefinitelyTyped/raw/master/node/node-0.11-tests.ts',
+            'https://github.com/borisyankov/DefinitelyTyped/raw/master/node-fibers/node-fibers-tests.ts',
+            'https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/master/moment/moment-tests.ts'
+        ];
+
 * Changes to the smart package definitions can be made directly to those definition files (e.g. ironrouter.d.ts).
 * Changes to the definitions for any third party libraries (e.g. jquery.d.ts) should be submitted as pull requests to the [DefinitelyTyped repo](https://github.com/borisyankov/DefinitelyTyped).
 * Most changes to the meteor core definition files, ("meteor.d.ts", "meteor.client.d.ts", "meteor.server.d.ts", etc), should be made by altering "scripts/generate-definition-files.js".  Often, fixing a type/signature mapping near the top is all that is necessary.  Corresponding changes should also be made to "script-definition-tests/meteor-tests.ts" and "tinytest-definition-tests/meteor-tests.ts".
@@ -174,7 +212,7 @@ Contributions are welcome. Remember that this project is about typing meteor pac
 
 ### Creating meteor.d.ts and its related files
 
-All definition files in this Meteor package are generated by executing the makefile (ensure *node* and *npm* are properly installed in your system).
+All definition files in this Meteor package are generated by executing the makefile (depends on *npm*):
 
     $ make
 
@@ -182,7 +220,7 @@ The makefile generates *meteor.d.ts, meteor.common.d.ts, meteor.client.d.ts, met
 
 This script also retrieves the latest third-party library definitions from the [DefinitelyTyped](https://github.com/borisyankov/DefinitelyTyped) repo, which is the semi-official repository for TypeScript definition files.  Running this script will also run any specified tests found on [DefinitelyTyped](https://github.com/borisyankov/DefinitelyTyped) as well as the tests for meteor.d.ts and any other meteor packages.  All tests that are run can be found in "script-definition-tests/".
 
-Finally, this script creates *package.js* and *./definitions/all-definitions.d.ts* with file lists created using the definition files found in the ./definitions directory.
+Finally, this script creates *package.js* and *./definitions/all-definitions.d.ts* with file lists of the definition files found in the ./definitions directory.
 
 ### Creating Definitions
 Writing typed definition files takes practice and experimentation, please refer to [this guide](http://www.typescriptlang.org/Handbook#writing-dts-files) for more details.
