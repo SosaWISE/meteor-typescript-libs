@@ -13,7 +13,7 @@
  * These are the server modules and interfaces that can't be automatically generated from the Meteor data.js file
  */
 
-declare module Meteor {
+declare namespace Meteor {
     interface EmailFields {
         from?: () => string;
         subject?: (user: Meteor.User) => string;
@@ -49,7 +49,7 @@ declare module Meteor {
     }
 }
 
-declare module Mongo {
+declare namespace Mongo {
     interface AllowDenyOptions {
         insert?: (userId: string, doc: any) => boolean;
         update?: (userId: string, doc: any, fieldNames: string[], modifier: any) => boolean;
@@ -59,7 +59,7 @@ declare module Mongo {
     }
 }
 
-declare module Accounts {
+declare namespace Accounts {
     interface IValidateLoginAttemptCbOpts {
       	type?: string;
       	allowed?: boolean;
@@ -89,7 +89,7 @@ interface MailComposer {
     streamMessage(): void;
     pipe(stream: any /** fs.WriteStream **/): void;
 }
-declare module Accounts {
+declare namespace Accounts {
 	function addEmail(userId: string, newEmail: string, verified?: boolean): void;
 	var emailTemplates: Meteor.EmailTemplates;
 	function findUserByEmail(email: string): Object;
@@ -109,7 +109,7 @@ declare module Accounts {
 	function validateNewUser(func: Function): boolean;
 }
 
-declare module App {
+declare namespace App {
 	function accessRule(pattern: string, options?: {
 				type?: string;
 				launchExternal?: boolean;
@@ -129,12 +129,12 @@ declare module App {
 	function setPreference(name: string, value: string, platform?: string): void;
 }
 
-declare module Assets {
+declare namespace Assets {
 	function getBinary(assetPath: string, asyncCallback?: Function): EJSON;
 	function getText(assetPath: string, asyncCallback?: Function): string;
 }
 
-declare module Blaze {
+declare namespace Blaze {
 	function Let(bindings: Function, contentFunc: Function): Blaze.View;
 	var TemplateInstance: TemplateInstanceStatic;
 	interface TemplateInstanceStatic {
@@ -146,18 +146,18 @@ declare module Blaze {
 
 }
 
-declare module Cordova {
+declare namespace Cordova {
 }
 
-declare module DDP {
+declare namespace DDP {
 }
 
-declare module DDPCommon {
+declare namespace DDPCommon {
 	function MethodInvocation(options: {
 			}): any;
 }
 
-declare module EJSON {
+declare namespace EJSON {
 	var CustomType: CustomTypeStatic;
 	interface CustomTypeStatic {
 		new(): CustomType;
@@ -167,15 +167,15 @@ declare module EJSON {
 
 }
 
-declare module Match {
+declare namespace Match {
 }
 
-declare module Meteor {
+declare namespace Meteor {
 	function onConnection(callback: Function): void;
 	function publish(name: string, func: Function): void;
 }
 
-declare module Mongo {
+declare namespace Mongo {
 	var Cursor: CursorStatic;
 	interface CursorStatic {
 		new<T>(): Cursor<T>;
@@ -185,17 +185,17 @@ declare module Mongo {
 
 }
 
-declare module Npm {
+declare namespace Npm {
 	function require(name: string): any;
 }
 
-declare module Package {
+declare namespace Package {
 }
 
-declare module Plugin {
+declare namespace Plugin {
 }
 
-declare module Tracker {
+declare namespace Tracker {
 	function Computation(): void;
 	interface Computation {
 	}
@@ -209,13 +209,13 @@ declare module Tracker {
 
 }
 
-declare module Session {
+declare namespace Session {
 }
 
-declare module HTTP {
+declare namespace HTTP {
 }
 
-declare module Email {
+declare namespace Email {
 	function send(options: {
 				from?: string;
 				to?: string | string[];

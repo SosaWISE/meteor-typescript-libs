@@ -2,7 +2,7 @@
  * These are the server modules and interfaces that can't be automatically generated from the Meteor data.js file
  */
 
-declare module Meteor {
+declare namespace Meteor {
     interface EmailFields {
         from?: () => string;
         subject?: (user: Meteor.User) => string;
@@ -38,7 +38,7 @@ declare module Meteor {
     }
 }
 
-declare module Mongo {
+declare namespace Mongo {
     interface AllowDenyOptions {
         insert?: (userId: string, doc: any) => boolean;
         update?: (userId: string, doc: any, fieldNames: string[], modifier: any) => boolean;
@@ -48,7 +48,7 @@ declare module Mongo {
     }
 }
 
-declare module Accounts {
+declare namespace Accounts {
     interface IValidateLoginAttemptCbOpts {
       	type?: string;
       	allowed?: boolean;

@@ -44,25 +44,25 @@ interface ITinytestAssertions {
     _stringEqual(actual: string, expected: string, msg?: string): void;
 }
 
-declare module Tinytest {
+declare namespace Tinytest {
     function add(description : string , func : (test : ITinytestAssertions) => void) : void;
     function addAsync(description : string , func : (test : ITinytestAssertions) => void) : void;
 }
 
 // Kept in for backwards compatibility
-declare module Meteor {
+declare namespace Meteor {
     interface Tinytest {
         add(description : string , func : (test : ITinytestAssertions) => void) : void;
         addAsync(description : string , func : (test : ITinytestAssertions) => void) : void;
     }
 }
 
-declare module Accounts {
+declare namespace Accounts {
 	var ui: {
 		};
 }
 
-declare module App {
+declare namespace App {
 	function accessRule(pattern: string, options?: {
 				type?: string;
 				launchExternal?: boolean;
@@ -82,10 +82,10 @@ declare module App {
 	function setPreference(name: string, value: string, platform?: string): void;
 }
 
-declare module Assets {
+declare namespace Assets {
 }
 
-declare module Blaze {
+declare namespace Blaze {
 	function Let(bindings: Function, contentFunc: Function): Blaze.View;
 	var TemplateInstance: TemplateInstanceStatic;
 	interface TemplateInstanceStatic {
@@ -97,19 +97,19 @@ declare module Blaze {
 
 }
 
-declare module Cordova {
+declare namespace Cordova {
 	function depends(dependencies:{[id:string]:string}): void;
 }
 
-declare module DDP {
+declare namespace DDP {
 }
 
-declare module DDPCommon {
+declare namespace DDPCommon {
 	function MethodInvocation(options: {
 			}): any;
 }
 
-declare module EJSON {
+declare namespace EJSON {
 	var CustomType: CustomTypeStatic;
 	interface CustomTypeStatic {
 		new(): CustomType;
@@ -119,13 +119,13 @@ declare module EJSON {
 
 }
 
-declare module Match {
+declare namespace Match {
 }
 
-declare module Meteor {
+declare namespace Meteor {
 }
 
-declare module Mongo {
+declare namespace Mongo {
 	var Cursor: CursorStatic;
 	interface CursorStatic {
 		new<T>(): Cursor<T>;
@@ -135,11 +135,11 @@ declare module Mongo {
 
 }
 
-declare module Npm {
+declare namespace Npm {
 	function depends(dependencies:{[id:string]:string}): void;
 }
 
-declare module Package {
+declare namespace Package {
 	function describe(options: {
 				summary?: string;
 				version?: string;
@@ -160,10 +160,10 @@ declare module Package {
 			}): void;
 }
 
-declare module Plugin {
+declare namespace Plugin {
 }
 
-declare module Tracker {
+declare namespace Tracker {
 	function Computation(): void;
 	interface Computation {
 	}
@@ -177,13 +177,13 @@ declare module Tracker {
 
 }
 
-declare module Session {
+declare namespace Session {
 }
 
-declare module HTTP {
+declare namespace HTTP {
 }
 
-declare module Email {
+declare namespace Email {
 }
 
 declare var CompileStep: CompileStepStatic;

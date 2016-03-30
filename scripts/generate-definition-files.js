@@ -829,7 +829,7 @@ var createModules = function createModules() {
   var allModulesContent = '';
   _.each(moduleNames, function (moduleName) {
     var moduleContent = '';
-    moduleContent += 'declare module ' + moduleName + ' {\n';
+    moduleContent += 'declare namespace ' + moduleName + ' {\n';
     moduleContent += createModuleInnerContent(moduleName);
     if (moduleName === 'Accounts') {
       _.each(accountsClassesInModules, function (className) {

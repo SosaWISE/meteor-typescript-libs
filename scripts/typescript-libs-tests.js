@@ -10,7 +10,9 @@ var testFilenames = [
   'node-fibers-tests.ts',
   'node-tests.ts',
   'underscore-tests.ts',
-  'underscore.string-tests.ts'
+  'underscore.string-tests.ts',
+  'moment-tests.ts',
+  'collectionfs-tests.ts'
 ];
 var testsWithModuleFlag = [
   'handlebars-tests.ts',
@@ -28,9 +30,9 @@ exec('pwd', function(error, stdout, stderror) {
 testFilenames.forEach(function (testFilename) {
   var command;
   if (_.indexOf(testsWithModuleFlag, testFilename) != -1) {
-    command = 'tsc -m commonjs ' + TEST_DIR + testFilename;
+    command = 'tsc --allowUnreachableCode -m commonjs ' + TEST_DIR + testFilename;
   } else {
-    command = 'tsc '+ TEST_DIR + testFilename;
+    command = 'tsc --allowUnreachableCode '+ TEST_DIR + testFilename;
   }
 
   var resultFilename = testFilename.replace('.ts', '.js');

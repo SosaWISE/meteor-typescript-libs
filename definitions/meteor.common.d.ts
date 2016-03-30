@@ -21,7 +21,7 @@ interface JSONable {
 }
 interface EJSON extends EJSONable {}
 
-declare module Match {
+declare namespace Match {
     var Any: any;
     var String: any;
     var Integer: any;
@@ -35,7 +35,7 @@ declare module Match {
     function Where(condition: any): any;
 }
 
-declare module Meteor {
+declare namespace Meteor {
     interface UserEmail {
         address:string;
         verified:boolean;
@@ -63,7 +63,7 @@ declare module Meteor {
     }
 }
 
-declare module DDP {
+declare namespace DDP {
     interface DDPStatic {
         subscribe(name: string, ...rest: any[]): Meteor.SubscriptionHandle;
         call(method: string, ...parameters: any[]):void;
@@ -85,7 +85,7 @@ declare module DDP {
     }
 }
 
-declare module Mongo {
+declare namespace Mongo {
 	interface Selector {
 	    [key: string]:any;
    	}
@@ -97,7 +97,7 @@ declare module Mongo {
     }
 }
 
-declare module HTTP {
+declare namespace HTTP {
 
     interface HTTPRequest {
         content?:string;
@@ -124,7 +124,7 @@ declare module HTTP {
     function put(url: string, callOptions?: HTTP.HTTPRequest, asyncCallback?: Function): HTTP.HTTPResponse;
 }
 
-declare module Random {
+declare namespace Random {
     function id(numberOfChars?: number): string;
     function secret(numberOfChars?: number): string;
     function fraction():number;
@@ -133,12 +133,12 @@ declare module Random {
     function choice(str:string):string; // @param str, @return a random char in str
 }
 
-declare module Accounts {
+declare namespace Accounts {
     function loginServicesConfigured(): boolean;
 
     function onPageLoadLogin(func: Function): void;
 }
-declare module Accounts {
+declare namespace Accounts {
 	function createUser(options: {
 				username?: string;
 				email?: string;
@@ -176,7 +176,7 @@ declare module Accounts {
 	function onLoginFailure(func: Function); /** TODO: add return value **/
 }
 
-declare module App {
+declare namespace App {
 	function accessRule(pattern: string, options?: {
 				type?: string;
 				launchExternal?: boolean;
@@ -196,10 +196,10 @@ declare module App {
 	function setPreference(name: string, value: string, platform?: string): void;
 }
 
-declare module Assets {
+declare namespace Assets {
 }
 
-declare module Blaze {
+declare namespace Blaze {
 	function Let(bindings: Function, contentFunc: Function): Blaze.View;
 	var TemplateInstance: TemplateInstanceStatic;
 	interface TemplateInstanceStatic {
@@ -211,19 +211,19 @@ declare module Blaze {
 
 }
 
-declare module Cordova {
+declare namespace Cordova {
 }
 
-declare module DDP {
+declare namespace DDP {
 	function connect(url: string): DDP.DDPStatic;
 }
 
-declare module DDPCommon {
+declare namespace DDPCommon {
 	function MethodInvocation(options: {
 			}): any;
 }
 
-declare module EJSON {
+declare namespace EJSON {
 	var CustomType: CustomTypeStatic;
 	interface CustomTypeStatic {
 		new(): CustomType;
@@ -251,11 +251,11 @@ declare module EJSON {
 	function toJSONValue(val: EJSON): JSONable;
 }
 
-declare module Match {
+declare namespace Match {
 	function test(value: any, pattern: any): boolean;
 }
 
-declare module Meteor {
+declare namespace Meteor {
 	var Error: ErrorStatic;
 	interface ErrorStatic {
 		new(error: string | number, reason?: string, details?: string): Error;
@@ -292,7 +292,7 @@ declare module Meteor {
 	function wrapAsync(func: Function, context?: Object): any;
 }
 
-declare module Mongo {
+declare namespace Mongo {
 	var Collection: CollectionStatic;
 	interface CollectionStatic {
 		new<T>(name: string, options?: {
@@ -354,16 +354,16 @@ declare module Mongo {
 
 }
 
-declare module Npm {
+declare namespace Npm {
 }
 
-declare module Package {
+declare namespace Package {
 }
 
-declare module Plugin {
+declare namespace Plugin {
 }
 
-declare module Tracker {
+declare namespace Tracker {
 	function Computation(): void;
 	interface Computation {
 	}
@@ -377,10 +377,10 @@ declare module Tracker {
 
 }
 
-declare module Session {
+declare namespace Session {
 }
 
-declare module HTTP {
+declare namespace HTTP {
 	function call(method: string, url: string, options?: {
 				content?: string;
 				data?: Object;
@@ -400,7 +400,7 @@ declare module HTTP {
 	function put(url: string, callOptions?: Object, asyncCallback?: Function): HTTP.HTTPResponse;
 }
 
-declare module Email {
+declare namespace Email {
 }
 
 declare var CompileStep: CompileStepStatic;

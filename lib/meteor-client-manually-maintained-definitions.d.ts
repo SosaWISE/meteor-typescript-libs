@@ -2,9 +2,9 @@
  * These are the client modules and interfaces that can't be automatically generated from the Meteor data.js file
  */
 
-declare module Meteor {
+declare namespace Meteor {
     /** Start definitions for Template **/
-    export interface Event {
+    interface Event {
         type:string;
         target:HTMLElement;
         currentTarget:HTMLElement;
@@ -52,7 +52,7 @@ declare module Meteor {
     }
 }
 
-declare module Blaze {
+declare namespace Blaze {
     interface View {
         name: string;
         parentView: Blaze.View;
@@ -76,7 +76,7 @@ declare module Blaze {
     }
 }
 
-declare module BrowserPolicy {
+declare namespace BrowserPolicy {
 
     interface framing {
         disallow():void;

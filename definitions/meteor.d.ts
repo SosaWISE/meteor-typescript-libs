@@ -21,7 +21,7 @@ interface JSONable {
 }
 interface EJSON extends EJSONable {}
 
-declare module Match {
+declare namespace Match {
     var Any: any;
     var String: any;
     var Integer: any;
@@ -35,7 +35,7 @@ declare module Match {
     function Where(condition: any): any;
 }
 
-declare module Meteor {
+declare namespace Meteor {
     interface UserEmail {
         address:string;
         verified:boolean;
@@ -63,7 +63,7 @@ declare module Meteor {
     }
 }
 
-declare module DDP {
+declare namespace DDP {
     interface DDPStatic {
         subscribe(name: string, ...rest: any[]): Meteor.SubscriptionHandle;
         call(method: string, ...parameters: any[]):void;
@@ -85,7 +85,7 @@ declare module DDP {
     }
 }
 
-declare module Mongo {
+declare namespace Mongo {
 	interface Selector {
 	    [key: string]:any;
    	}
@@ -97,7 +97,7 @@ declare module Mongo {
     }
 }
 
-declare module HTTP {
+declare namespace HTTP {
 
     interface HTTPRequest {
         content?:string;
@@ -124,7 +124,7 @@ declare module HTTP {
     function put(url: string, callOptions?: HTTP.HTTPRequest, asyncCallback?: Function): HTTP.HTTPResponse;
 }
 
-declare module Random {
+declare namespace Random {
     function id(numberOfChars?: number): string;
     function secret(numberOfChars?: number): string;
     function fraction():number;
@@ -133,7 +133,7 @@ declare module Random {
     function choice(str:string):string; // @param str, @return a random char in str
 }
 
-declare module Accounts {
+declare namespace Accounts {
     function loginServicesConfigured(): boolean;
 
     function onPageLoadLogin(func: Function): void;
@@ -142,9 +142,9 @@ declare module Accounts {
  * These are the client modules and interfaces that can't be automatically generated from the Meteor data.js file
  */
 
-declare module Meteor {
+declare namespace Meteor {
     /** Start definitions for Template **/
-    export interface Event {
+    interface Event {
         type:string;
         target:HTMLElement;
         currentTarget:HTMLElement;
@@ -192,7 +192,7 @@ declare module Meteor {
     }
 }
 
-declare module Blaze {
+declare namespace Blaze {
     interface View {
         name: string;
         parentView: Blaze.View;
@@ -216,7 +216,7 @@ declare module Blaze {
     }
 }
 
-declare module BrowserPolicy {
+declare namespace BrowserPolicy {
 
     interface framing {
         disallow():void;
@@ -257,7 +257,7 @@ declare module BrowserPolicy {
  * These are the server modules and interfaces that can't be automatically generated from the Meteor data.js file
  */
 
-declare module Meteor {
+declare namespace Meteor {
     interface EmailFields {
         from?: () => string;
         subject?: (user: Meteor.User) => string;
@@ -293,7 +293,7 @@ declare module Meteor {
     }
 }
 
-declare module Mongo {
+declare namespace Mongo {
     interface AllowDenyOptions {
         insert?: (userId: string, doc: any) => boolean;
         update?: (userId: string, doc: any, fieldNames: string[], modifier: any) => boolean;
@@ -303,7 +303,7 @@ declare module Mongo {
     }
 }
 
-declare module Accounts {
+declare namespace Accounts {
     interface IValidateLoginAttemptCbOpts {
       	type?: string;
       	allowed?: boolean;
@@ -368,20 +368,20 @@ interface ITinytestAssertions {
     _stringEqual(actual: string, expected: string, msg?: string): void;
 }
 
-declare module Tinytest {
+declare namespace Tinytest {
     function add(description : string , func : (test : ITinytestAssertions) => void) : void;
     function addAsync(description : string , func : (test : ITinytestAssertions) => void) : void;
 }
 
 // Kept in for backwards compatibility
-declare module Meteor {
+declare namespace Meteor {
     interface Tinytest {
         add(description : string , func : (test : ITinytestAssertions) => void) : void;
         addAsync(description : string , func : (test : ITinytestAssertions) => void) : void;
     }
 }
 
-declare module Accounts {
+declare namespace Accounts {
 	function addEmail(userId: string, newEmail: string, verified?: boolean): void;
 	function changePassword(oldPassword: string, newPassword: string, callback?: Function): void;
 	function createUser(options: {
@@ -436,7 +436,7 @@ declare module Accounts {
 	function validateNewUser(func: Function): boolean;
 }
 
-declare module App {
+declare namespace App {
 	function accessRule(pattern: string, options?: {
 				type?: string;
 				launchExternal?: boolean;
@@ -456,12 +456,12 @@ declare module App {
 	function setPreference(name: string, value: string, platform?: string): void;
 }
 
-declare module Assets {
+declare namespace Assets {
 	function getBinary(assetPath: string, asyncCallback?: Function): EJSON;
 	function getText(assetPath: string, asyncCallback?: Function): string;
 }
 
-declare module Blaze {
+declare namespace Blaze {
 	function Each(argFunc: Function, contentFunc: Function, elseFunc?: Function): Blaze.View;
 	function If(conditionFunc: Function, contentFunc: Function, elseFunc?: Function): Blaze.View;
 	function Let(bindings: Function, contentFunc: Function): Blaze.View;
@@ -515,20 +515,20 @@ declare module Blaze {
 	function toHTMLWithData(templateOrView: Template | Blaze.View, data: Object | Function): string;
 }
 
-declare module Cordova {
+declare namespace Cordova {
 	function depends(dependencies:{[id:string]:string}): void;
 }
 
-declare module DDP {
+declare namespace DDP {
 	function connect(url: string): DDP.DDPStatic;
 }
 
-declare module DDPCommon {
+declare namespace DDPCommon {
 	function MethodInvocation(options: {
 			}): any;
 }
 
-declare module EJSON {
+declare namespace EJSON {
 	var CustomType: CustomTypeStatic;
 	interface CustomTypeStatic {
 		new(): CustomType;
@@ -556,11 +556,11 @@ declare module EJSON {
 	function toJSONValue(val: EJSON): JSONable;
 }
 
-declare module Match {
+declare namespace Match {
 	function test(value: any, pattern: any): boolean;
 }
 
-declare module Meteor {
+declare namespace Meteor {
 	var Error: ErrorStatic;
 	interface ErrorStatic {
 		new(error: string | number, reason?: string, details?: string): Error;
@@ -617,7 +617,7 @@ declare module Meteor {
 	function wrapAsync(func: Function, context?: Object): any;
 }
 
-declare module Mongo {
+declare namespace Mongo {
 	var Collection: CollectionStatic;
 	interface CollectionStatic {
 		new<T>(name: string, options?: {
@@ -695,12 +695,12 @@ declare module Mongo {
 
 }
 
-declare module Npm {
+declare namespace Npm {
 	function depends(dependencies:{[id:string]:string}): void;
 	function require(name: string): any;
 }
 
-declare module Package {
+declare namespace Package {
 	function describe(options: {
 				summary?: string;
 				version?: string;
@@ -721,7 +721,7 @@ declare module Package {
 			}): void;
 }
 
-declare module Tracker {
+declare namespace Tracker {
 	function Computation(): void;
 	interface Computation {
 		firstRun: boolean;
@@ -754,14 +754,14 @@ declare module Tracker {
 	function onInvalidate(callback: Function): void;
 }
 
-declare module Session {
+declare namespace Session {
 	function equals(key: string, value: string | number | boolean | any /** Null **/ | any /** Undefined **/): boolean;
 	function get(key: string): any;
 	function set(key: string, value: EJSONable | any /** Undefined **/): void;
 	function setDefault(key: string, value: EJSONable | any /** Undefined **/): void;
 }
 
-declare module HTTP {
+declare namespace HTTP {
 	function call(method: string, url: string, options?: {
 				content?: string;
 				data?: Object;
@@ -781,7 +781,7 @@ declare module HTTP {
 	function put(url: string, callOptions?: Object, asyncCallback?: Function): HTTP.HTTPResponse;
 }
 
-declare module Email {
+declare namespace Email {
 	function send(options: {
 				from?: string;
 				to?: string | string[];

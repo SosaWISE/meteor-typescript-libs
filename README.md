@@ -82,7 +82,6 @@ Compilation will be much faster and code will be cleaner - it's always better to
 
 With the exception of the **body** and **head** templates, Meteor's Template dot notation cannot be used (ie. *Template.mytemplate*). Thanks to Typescript static typing checks, you will need to use the *bracket notation* to access the Template.
 
-
     Template['myTemplateName'].helpers({
       foo: function () {
         return Session.get("foo");
@@ -90,11 +89,16 @@ With the exception of the **body** and **head** templates, Meteor's Template dot
     });
 
     Template['myTemplateName'].onRendered(function ( ) { ... });
-    
+
+The same is true for `Meteor.settings`:
+
+    Meteor.settings.public['<some config>']    
+
 
 ### Form fields
 
 Form fields typically need to be cast to `<HTMLInputElement>`. For instance to read a form field value, use `(<HTMLInputElement>evt.target).value`.
+
 
 ### Global variables
 

@@ -10,7 +10,7 @@ interface JSONable {
 }
 interface EJSON extends EJSONable {}
 
-declare module Match {
+declare namespace Match {
     var Any: any;
     var String: any;
     var Integer: any;
@@ -24,7 +24,7 @@ declare module Match {
     function Where(condition: any): any;
 }
 
-declare module Meteor {
+declare namespace Meteor {
     interface UserEmail {
         address:string;
         verified:boolean;
@@ -52,7 +52,7 @@ declare module Meteor {
     }
 }
 
-declare module DDP {
+declare namespace DDP {
     interface DDPStatic {
         subscribe(name: string, ...rest: any[]): Meteor.SubscriptionHandle;
         call(method: string, ...parameters: any[]):void;
@@ -74,7 +74,7 @@ declare module DDP {
     }
 }
 
-declare module Mongo {
+declare namespace Mongo {
 	interface Selector {
 	    [key: string]:any;
    	}
@@ -86,7 +86,7 @@ declare module Mongo {
     }
 }
 
-declare module HTTP {
+declare namespace HTTP {
 
     interface HTTPRequest {
         content?:string;
@@ -113,7 +113,7 @@ declare module HTTP {
     function put(url: string, callOptions?: HTTP.HTTPRequest, asyncCallback?: Function): HTTP.HTTPResponse;
 }
 
-declare module Random {
+declare namespace Random {
     function id(numberOfChars?: number): string;
     function secret(numberOfChars?: number): string;
     function fraction():number;
@@ -122,7 +122,7 @@ declare module Random {
     function choice(str:string):string; // @param str, @return a random char in str
 }
 
-declare module Accounts {
+declare namespace Accounts {
     function loginServicesConfigured(): boolean;
 
     function onPageLoadLogin(func: Function): void;
