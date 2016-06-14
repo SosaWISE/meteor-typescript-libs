@@ -486,8 +486,8 @@ declare namespace Blaze {
 		$(selector: string): any;
 		autorun(runFunc: Function): Object;
 		data: Object;
-		find(selector?: string): Blaze.TemplateInstance;
-		findAll(selector: string): Blaze.TemplateInstance[];
+		find(selector?: string): HTMLInputElement;
+		findAll(selector: string): HTMLInputElement[];
 		firstNode: Object;
 		lastNode: Object;
 		subscribe(name: string, ...args: any[]): Meteor.SubscriptionHandle;
@@ -582,6 +582,7 @@ declare namespace Meteor {
 	function call(name: string, ...args: any[]): any;
 	function clearInterval(id: number): void;
 	function clearTimeout(id: number): void;
+	function defer(func: Function); /** TODO: add return value **/
 	function disconnect(): void;
 	var isClient: boolean;
 	var isCordova: boolean;
@@ -914,4 +915,3 @@ declare function execFileSync(command: string, args?: any[], options?: {
 				destination?: any;
 				waitForClose?: string;
 			}): String;
-declare function getExtension(): String;

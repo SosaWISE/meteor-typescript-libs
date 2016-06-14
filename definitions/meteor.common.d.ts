@@ -277,6 +277,7 @@ declare namespace Meteor {
 	function call(name: string, ...args: any[]): any;
 	function clearInterval(id: number): void;
 	function clearTimeout(id: number): void;
+	function defer(func: Function); /** TODO: add return value **/
 	var isClient: boolean;
 	var isCordova: boolean;
 	var isDevelopment: boolean;
@@ -478,4 +479,3 @@ declare function execFileSync(command: string, args?: any[], options?: {
 				destination?: any;
 				waitForClose?: string;
 			}): String;
-declare function getExtension(): String;

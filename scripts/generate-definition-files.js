@@ -225,8 +225,8 @@ const propertyAndReturnTypeMappings = {
 
   'Blaze.TemplateInstance#subscribe': 'Meteor.SubscriptionHandle',
   'Blaze.TemplateInstance#$': 'any',
-  'Blaze.TemplateInstance#findAll': 'Blaze.TemplateInstance[]',
-  'Blaze.TemplateInstance#find': 'Blaze.TemplateInstance',
+  'Blaze.TemplateInstance#findAll': 'HTMLInputElement[]',
+  'Blaze.TemplateInstance#find': 'HTMLInputElement',
   'Blaze.render': 'Blaze.View',
   'Blaze.renderWithData': 'Blaze.View',
   'Blaze.remove': 'void',

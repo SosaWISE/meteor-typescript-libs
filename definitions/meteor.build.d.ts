@@ -204,4 +204,3 @@ declare function execFileSync(command: string, args?: any[], options?: {
 				destination?: any;
 				waitForClose?: string;
 			}): String;
-declare function getExtension(): String;
